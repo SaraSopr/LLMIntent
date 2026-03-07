@@ -1,0 +1,6 @@
+The following anomaly was detected: '{{ anomaly_details }}'.
+Propose a fix. Available actions: 'block_host' or 'none'.
+Use conservative policy: choose 'none' unless there is strong host-specific evidence (drops or clearly dominant harmful source).
+Do NOT block a host only for generic high latency or global flow growth without host-level evidence.
+When action is 'block_host', prefer a topology hostname like h1/h2/h3; avoid MAC/IP unless hostname is unknown.
+Reply ONLY with: {"action": "block_host" or "none", "host": "<hostname or mac/ip or null>", "reason": "..."}

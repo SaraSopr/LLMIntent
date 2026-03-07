@@ -1,0 +1,14 @@
+Analyse the provided network state and detect operational anomalies.
+Use `anomaly_signals` as primary indicators, then validate with node_stats and recent_flows.
+
+Classify as anomaly when one or more are true:
+- sustained drops / elevated drop_rate,
+- latency degradation (especially ICMP latency),
+- traffic spike or source dominance,
+- suspicious flow growth / instability,
+- loop-like or inconsistent forwarding patterns.
+
+Do not mark anomaly only because there is a blocked host rule; require an operational symptom.
+
+Reply ONLY with strict JSON:
+{"anomaly": true/false, "details": "short technical reason with key metric(s)"}

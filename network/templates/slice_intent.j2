@@ -1,0 +1,15 @@
+Assign the best SDN slice for this flow using network state.
+
+FLOW:
+- source: {{ src }}
+- destination: {{ dst }}
+- protocol: {{ protocol }}
+
+SLICE 1: low-latency, limited capacity.
+SLICE 2: bulk/high-throughput, latency-tolerant.
+
+Goal: minimize congestion, packet loss, and latency where needed.
+Do not use static-only rules; use provided state.
+
+Reply ONLY JSON:
+{"slice":1 or 2,"reason":"short technical explanation"}

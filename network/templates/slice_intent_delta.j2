@@ -1,0 +1,11 @@
+Continue the same slice-assignment policy and same JSON schema as previous turns.
+Treat this turn as an incremental patch over remembered context.
+If a field is missing, keep the previous value.
+
+FLOW:
+- source: {{ src }}
+- destination: {{ dst }}
+- protocol: {{ protocol }}
+
+Use provided state update and return ONLY JSON:
+{"slice":1 or 2,"reason":"short technical reason"}
