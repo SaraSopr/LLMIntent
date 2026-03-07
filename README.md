@@ -1,228 +1,156 @@
-             ChatGPT
-                ↑
-                ↓
-     Northbound Python Script
-                ↑
-                ↓
-         REST API (ofctl_rest)
-                ↑
-                ↓
-         Ryu Controller
-                ↑
-                ↓
-            Switch
-                ↑
-                ↓
-             Hosts
-
 # LLM-Driven SDN Network Slicing
 
-Project for the **Softwarized and Virtualized Mobile Networks** course (A.Y. 2025–2026).  
-Master's degree in Computer Science — University of Trento.
+Course project for **Softwarized and Virtualized Mobile Networks** (A.Y. 2025–2026),
+M.Sc. in Computer Science — University of Trento.
 
-This project integrates a **Large Language Model (LLM)** into the decision process of a Software Defined Network, acting as a **northbound intelligence layer** over a RYU SDN controller. The LLM receives the current network state and operator intents, then autonomously implements changes on the network through OpenFlow rules.
+This project adds an LLM as a **northbound control intelligence layer** on top of a RYU SDN controller.
+The model receives compact network state snapshots and decides how to steer traffic and handle anomalies.
 
----
+## What the system does
 
-## Project Overview
+The platform runs on Mininet + Open vSwitch + RYU and uses the LLM for three tasks:
 
-The system implements an **LLM-driven network slicing architecture** over an emulated SDN infrastructure using Mininet and RYU.
+- **Slice assignment** (`ask_slice`) for each new flow.
+- **Anomaly detection** (`ask_anomaly`) on periodic monitoring windows.
+- **Automatic remediation** (`ask_fix`) when anomalies are actionable.
 
-The LLM is responsible for three autonomous decisions:
+### Network slices
 
-- **Slice assignment** — For each new traffic flow, the LLM decides which network slice to use based on the protocol and current network state.
-- **Anomaly detection** — Periodically, the LLM analyses network metrics (drop rates, traffic patterns) and detects anomalies.
-- **Automatic remediation** — When an anomaly is detected, the LLM proposes and implements a fix (e.g. blocking a misbehaving host) via RYU REST API.
+| Slice | Queue | Profile | Typical traffic |
+|---|---|---|---|
+| Slice 1 | Queue 1 | Low latency / high priority | ICMP, interactive |
+| Slice 2 | Queue 2 | High throughput / bulk | TCP, UDP |
 
-### Network Slices
+## High-level architecture
 
-| Slice | Queue | Profile | Traffic |
-|-------|-------|---------|---------|
-| Slice 1 | Queue 1 | High-priority / Low-latency | ICMP, interactive |
-| Slice 2 | Queue 2 | High-throughput / Bulk | TCP, UDP |
-
----
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────┐
-│              NORTHBOUND LAYER               │
-│                                             │
-│   LLMClient (OpenAI Responses API)         │
-│   ├── ask_slice()    → slice assignment     │
-│   ├── ask_anomaly()  → anomaly detection    │
-│   └── ask_fix()      → automatic remediation│
-└───────────────────┬─────────────────────────┘
-                    │ REST
-┌───────────────────▼─────────────────────────┐
-│              CONTROL PLANE                  │
-│                                             │
-│   RYU SDN Controller                        │
-│   ├── simple_switch_13  (L2 learning)       │
-│   └── ofctl_rest        (REST API)          │
-└───────────────────┬─────────────────────────┘
-                    │ OpenFlow 1.3
-┌───────────────────▼─────────────────────────┐
-│               DATA PLANE                    │
-│                                             │
-│   Mininet + Open vSwitch                    │
-│   ├── 3 switches (linear topology)          │
-│   ├── 5 hosts                               │
-│   └── QoS queues (HTB) per port             │
-└─────────────────────────────────────────────┘
+```text
+LLM (OpenAI Responses API)
+       ↑
+       ↓
+Northbound Python logic (LLMClient)
+       ↑
+       ↓
+RYU REST API (ofctl_rest)
+       ↑
+       ↓
+RYU controller + OpenFlow 1.3
+       ↑
+       ↓
+OVS switches + Mininet hosts
 ```
 
-### Module Structure
+## Repository structure
 
-| File | Responsibility |
-|------|----------------|
-| `networkGeneration2.py` | Orchestrator — Mininet setup, thread management |
-| `networksGenerator.py` | Topology builder + OVS QoS queue configuration |
-| `llmClient.py` | LLM northbound interface (OpenAI Responses API) |
-| `network/templates/*.j2` | Jinja2 prompt templates (slice, anomaly, fix, system/user) |
-| `ryuController.py` | RYU REST API wrapper |
-| `trafficManager.py` | Traffic generation + LLM slice assignment |
-| `networkMonitor.py` | Drop detection + LLM anomaly detection + auto-fix |
-| `metricStore.py` | Thread-safe metrics store → `metrics.json` |
+| Path | Role |
+|---|---|
+| `network/networkGeneration.py` | Main experiment orchestrator |
+| `network/networksGenerator.py` | Topology generation + QoS queue setup |
+| `network/llmClient.py` | OpenAI client + prompting + parsing + logging |
+| `network/networkMonitor.py` | Periodic monitoring, anomaly detection, auto-fix |
+| `network/trafficManager.py` | Random traffic generation + LLM-driven slice installation |
+| `network/ryuController.py` | RYU REST wrapper |
+| `network/metricStore.py` | Thread-safe metrics and persistence |
+| `network/templates/*.j2` | Jinja2 prompt templates |
+| `gui/Dashboard.py` | Streamlit dashboard entrypoint |
+| `gui/SidebarManager.py` | Host security controls (isolate/unblock) |
 
----
+## Quick start
 
-## Getting Started
+### 1) Prerequisites
 
-### Prerequisites
+- Python **3.8+**
+- Mininet + Open vSwitch
+- RYU SDN framework
+- OpenAI API key
+- (Optional) Vagrant/VirtualBox if running in a VM
 
-- **Vagrant** + **VirtualBox** (or ComNetsEmu VM)
-- **Python 3.8+**
-- **Mininet** + **Open vSwitch**
-- **RYU SDN Framework**
-- **Ollama** (macOS/Linux, for local LLM) — [ollama.com](https://ollama.com)
-- An **OpenAI API key** — [platform.openai.com](https://platform.openai.com)
+### 2) Install dependencies
 
-### Setup Instructions
-
-**1. Start the VM**
 ```bash
-vagrant up
-vagrant ssh
+pip install openai requests jinja2 streamlit matplotlib plotly pandas networkx
 ```
 
-**2. Install Python dependencies (inside the VM)**
-```bash
-pip install openai requests jinja2
-```
+### 3) Configure environment
 
-**3. Start Ollama on the host machine (macOS)**
-
-If using Ollama as LLM provider, run on the **Mac host**:
-```bash
-OLLAMA_HOST=0.0.0.0 ollama serve
-```
-
-> The VM reaches the Mac host at `192.168.64.1:11434`.  
-> To verify: `curl http://192.168.64.1:11434/api/tags`
-
-**4. Configure environment variables (.env)**
-
-Create a local `.env` file from the example:
 ```bash
 cp .env.example .env
 ```
 
-Then set at least:
+Minimum `.env` values:
+
 ```env
 OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-5-mini
+OPENAI_MODEL=gpt-4.1-mini
 RYU_REST_URL=http://127.0.0.1:8080
 GUI_VM_IP=192.168.64.8
 EXPERIMENT_RUNTIME=120
 ```
 
-Useful optional variables:
-- `NUM_SWITCHES`, `NUM_HOSTS` (topology size)
-- `REFRESH_SEC` (dashboard refresh rate)
-- `METRICS_FILE` (metrics output file)
+Useful optional settings:
 
-**5. Run the experiment**
+- `NUM_SWITCHES`, `NUM_HOSTS`
+- `REFRESH_SEC`
+- `LLM_CALLS_LOG_FILE`
+- `ADD_URL`, `DEL_URL` (explicit GUI endpoints)
+
+### 4) Run the experiment
+
+From project root:
+
 ```bash
-cd /path/to/project
-sudo python3 networkGeneration.py
+sudo python3 network/networkGeneration.py
 ```
 
-**6. Launch the GUI** (in a separate terminal)
+### 5) Run the dashboard
+
+In a separate terminal:
+
 ```bash
-streamlit run app_gui_advanced.py
+streamlit run gui/Dashboard.py
 ```
 
----
+## LLM loop behavior
 
-## LLM Decision Loop
+### Slice assignment (per flow)
 
-### Slice Assignment (every flow)
-```
-new TCP flow h1 → h2
-→ LLM: "TCP is bulk transfer → Slice 2 (high-throughput)"
-→ RYU installs flow with SET_QUEUE:2
-→ log: [📡] TCP: h1→h2 | ✅ ACCEPTED | 1389ms | 🔵 Slice 2
-```
+1. Collect compact flow/state context.
+2. Ask the model for `slice: 1|2` with short reason.
+3. Install OpenFlow rules with `SET_QUEUE` accordingly.
 
-### Anomaly Detection + Remediation (every 30s)
-```
-LLM analyses node_stats from RYU
-→ "High drop rate at h4 (3 drops) — unusual pattern"
-→ ask_fix(): "block_host: h4"
-→ RYU installs drop rule priority:65535 on h4
-→ log: [🔧 FIX] h4 blocked — High drop rate detected
-```
+### Anomaly detection (periodic)
 
----
+1. Build anomaly signals (drop rate, latency stats, flow growth, etc.).
+2. Ask the model for anomaly classification.
+3. If anomaly is actionable, request remediation (`block_host` or `none`).
+4. Apply fix through RYU REST and log decision metadata.
 
-## Supported LLM Providers
+## Outputs and observability
 
-| Provider | Model | Notes |
-|----------|-------|-------|
-| `openai` | `gpt-5-mini` | Recommended — typed outputs + robust JSON handling |
-| `groq` | `groq/compound` | Legacy compatibility via fallback env vars |
-| `ollama` | `ministral-3:8b` | Legacy/local alternative |
-
-To switch provider, edit `networkGeneration2.py`:
-```python
-# Groq (recommended)
-exp = SDNExperiment(provider="groq", api_key="gsk_...")
-
-# Ollama (local)
-exp = SDNExperiment(provider="ollama")
-
-# OpenAI
-exp = SDNExperiment(provider="openai", api_key="sk-...")
-```
-
----
+- Runtime metrics: `network/metrics.json`
+- Model-call audit log: `network/llm_calls.jsonl`
+- Dashboard sections:
+  - topology and host isolation state
+  - baseline vs LLM comparison
+  - LLM activity and raw latest call details
 
 ## Notes
 
-- Keep secrets only in `.env` (never hardcode API keys in Python files).
-- `.env` is ignored by git; use `.env.example` as template.
+- Keep secrets only in `.env`.
+- `.env` and `.idea/` are git-ignored.
+- If Mininet is left dirty, run:
 
-- If Mininet fails to terminate correctly, run `sudo mn -c` to clean up.
-- The first LLM call may take longer as the model loads into memory.
-- QoS queues are configured using OVS HTB (Hierarchical Token Bucket) with:
-  - Queue 1: min 8 Mbps, max 10 Mbps
-  - Queue 2: min 2 Mbps, max 10 Mbps
+```bash
+sudo mn -c
+```
 
----
+## Technologies
 
-## Authors
+- SDN: RYU, OpenFlow 1.3, Open vSwitch
+- Emulation: Mininet
+- LLM: OpenAI Responses API
+- UI: Streamlit
+- Prompting: Jinja2 templates
 
-| Sara Soprana | sara.soprana@studenti.unitn.it |
-|----------|--------------------------------|
+## Author
 
----
-
-## Used Technologies
-
-- **SDN**: RYU Controller, OpenFlow 1.3, Open vSwitch
-- **Network Emulation**: Mininet
-- **LLM**: OpenAI Responses API (`gpt-5-mini` default), legacy Groq fallback
-- **QoS**: OVS HTB queuing, SET_QUEUE OpenFlow action
-- **GUI**: Streamlit
+- Sara Soprana — sara.soprana@studenti.unitn.it
