@@ -1,0 +1,303 @@
+"""
+networkMonitor.py — Monitors blocked traffic and anomalies via RYU + LLM.
+"""
+
+import json
+import time
+import threading
+
+from metricStore   import MetricsStore
+from ryuController import RyuController
+from llmClient     import LLMClient
+
+TOPOLOGY_FILE = "topology.json"
+
+
+class NetworkMonitor:
+    """
+    Continuously monitors the network for:
+    - Blocked traffic (drop counters on priority-65535 flows)
+    - Anomalies detected by the LLM → automatic fix via RYU
+    Also refreshes the flow table in MetricsStore.
+    """
+
+    def __init__(self,
+                 metrics: MetricsStore,
+                 ryu: RyuController,
+                 llm: LLMClient,
+                 stop_event: threading.Event,
+                 num_switches: int,
+                 anomaly_check_interval: int = 30):
+        self.metrics                = metrics
+        self.ryu                    = ryu
+        self.llm                    = llm
+        self.stop_event             = stop_event
+        self.num_switches           = num_switches
+        self.anomaly_check_interval = anomaly_check_interval
+        self._topo_map              = self._load_topology()
+        self._last_drop_counts      = {}
+        self._last_anomaly_check    = time.time()  # delay primo check
+        self._prev_num_flows        = 0
+
+    # ── MAIN LOOP ─────────────────────────────────────────────────────────────
+
+    def monitor_blocked_traffic(self):
+        while not self.stop_event.is_set():
+            self._check_drops()
+            self._refresh_flow_table()
+            self._maybe_check_anomalies()
+            time.sleep(2)
+
+    # ── PRIVATE ───────────────────────────────────────────────────────────────
+
+    def _check_drops(self):
+        try:
+            flows = self.ryu.get_flows(self.num_switches)
+            for flow in flows:
+                if flow.get("priority") != 65535:
+                    continue
+                match    = flow.get("match", {})
+                curr     = flow.get("packet_count", 0)
+                mac      = match.get("eth_src") or match.get("eth_dst")
+                if not mac:
+                    continue
+                prev = self._last_drop_counts.get(mac, 0)
+                if curr > prev:
+                    drops     = curr - prev
+                    host_name = self._mac_to_host(mac)
+                    print(f"[🚫 ALERT] {host_name} ({mac}): {drops} nuovi drop")
+                    self._last_drop_counts[mac] = curr
+        except Exception as e:
+            print(f"[⚠️] _check_drops error: {e}")
+
+    def _refresh_flow_table(self):
+        flows = self.ryu.get_flows(self.num_switches)
+        flows.sort(key=lambda f: f.get("duration_sec", 0))
+        self.metrics.update_flows(flows)
+        self.metrics.persist()
+
+    def _maybe_check_anomalies(self):
+        """Periodically ask the LLM to detect anomalies and apply fixes."""
+        now = time.time()
+        if now - self._last_anomaly_check < self.anomaly_check_interval:
+            return
+
+        self._last_anomaly_check = now
+        network_state = self.ryu.get_network_state(self.num_switches)
+        snapshot = self.metrics.snapshot()
+        network_state["node_stats"] = snapshot.get("node_stats", {})
+
+        signals = self._build_anomaly_signals(network_state, snapshot)
+        network_state["anomaly_signals"] = signals
+
+        heuristic_result = self._heuristic_anomaly_decision(signals)
+
+        # 1. Detect anomaly
+        llm_result = self.llm.ask_anomaly(network_state)
+        result = self._merge_anomaly_results(llm_result, heuristic_result)
+
+        if result.get("anomaly"):
+            print(f"[🤖 ANOMALY] {result.get('details')}")
+
+            # 2. Ask/apply fix only when anomaly is actionable (avoid aggressive false positives)
+            if self._is_actionable_anomaly(signals):
+                fix = self.llm.ask_fix(network_state, result.get("details", ""))
+                self._apply_fix(fix)
+            else:
+                skip_reason = "Anomalia debole/non azionabile: nessun blocco host applicato"
+                print(f"[🔧 FIX] {skip_reason}")
+                if self.metrics:
+                    self.metrics.add_llm_log(
+                        "fix",
+                        "auto-skip (low confidence anomaly)",
+                        {
+                            "action": "none",
+                            "host": None,
+                            "reason": skip_reason,
+                            "guarded": True,
+                        },
+                    )
+        else:
+            print("[🤖 LLM] Nessuna anomalia rilevata.")
+
+    def _build_anomaly_signals(self, network_state: dict, snapshot: dict) -> dict:
+        events = snapshot.get("events", [])[:40]
+        total_events = len(events)
+        dropped = sum(1 for e in events if not e.get("accepted"))
+        accepted = total_events - dropped
+
+        latencies = [float(e.get("latency_ms", 0) or 0) for e in events]
+        latencies_sorted = sorted(latencies)
+        if latencies_sorted:
+            p95_idx = int(0.95 * (len(latencies_sorted) - 1))
+            latency_p95 = latencies_sorted[p95_idx]
+            latency_avg = sum(latencies_sorted) / len(latencies_sorted)
+        else:
+            latency_p95 = 0.0
+            latency_avg = 0.0
+
+        icmp_lat = [float(e.get("latency_ms", 0) or 0) for e in events if str(e.get("proto", "")).upper() == "ICMP"]
+        tcp_lat = [float(e.get("latency_ms", 0) or 0) for e in events if str(e.get("proto", "")).upper() == "TCP"]
+        udp_lat = [float(e.get("latency_ms", 0) or 0) for e in events if str(e.get("proto", "")).upper() == "UDP"]
+
+        flows = network_state.get("flows", []) or []
+        blocked_drop_rules = sum(1 for f in flows if int(f.get("priority", 0) or 0) == 65535)
+
+        num_flows = int(network_state.get("num_flows", 0) or 0)
+        flow_growth = num_flows - self._prev_num_flows
+        self._prev_num_flows = num_flows
+
+        src_counts = {}
+        for e in events:
+            src = e.get("src")
+            if not src:
+                continue
+            src_counts[src] = src_counts.get(src, 0) + 1
+        max_src_share = (max(src_counts.values()) / total_events) if total_events else 0.0
+
+        return {
+            "window_events": total_events,
+            "accepted": accepted,
+            "dropped": dropped,
+            "drop_rate": round((dropped / total_events), 4) if total_events else 0.0,
+            "latency_avg_ms": round(latency_avg, 2),
+            "latency_p95_ms": round(latency_p95, 2),
+            "icmp_count": len(icmp_lat),
+            "icmp_avg_ms": round((sum(icmp_lat) / len(icmp_lat)), 2) if icmp_lat else 0.0,
+            "tcp_count": len(tcp_lat),
+            "tcp_avg_ms": round((sum(tcp_lat) / len(tcp_lat)), 2) if tcp_lat else 0.0,
+            "udp_count": len(udp_lat),
+            "udp_avg_ms": round((sum(udp_lat) / len(udp_lat)), 2) if udp_lat else 0.0,
+            "num_flows": num_flows,
+            "flow_growth": flow_growth,
+            "blocked_drop_rules": blocked_drop_rules,
+            "max_src_share": round(max_src_share, 4),
+        }
+
+    @staticmethod
+    def _heuristic_anomaly_decision(signals: dict) -> dict:
+        reasons = []
+
+        events = int(signals.get("window_events", 0) or 0)
+        drop_rate = float(signals.get("drop_rate", 0.0) or 0.0)
+        icmp_count = int(signals.get("icmp_count", 0) or 0)
+        icmp_avg = float(signals.get("icmp_avg_ms", 0.0) or 0.0)
+        p95 = float(signals.get("latency_p95_ms", 0.0) or 0.0)
+        flow_growth = int(signals.get("flow_growth", 0) or 0)
+        max_src_share = float(signals.get("max_src_share", 0.0) or 0.0)
+
+        if events >= 12 and drop_rate >= 0.20:
+            reasons.append(f"drop rate elevato ({drop_rate * 100:.1f}% su {events} eventi)")
+        if icmp_count >= 5 and icmp_avg >= 350.0:
+            reasons.append(f"latenza ICMP anomala ({icmp_avg:.1f} ms)")
+        if events >= 12 and p95 >= 2500.0:
+            reasons.append(f"latenza p95 molto alta ({p95:.1f} ms)")
+        if flow_growth >= 60 and max_src_share >= 0.75:
+            reasons.append(
+                f"spike flussi con sorgente dominante (Δflow={flow_growth}, src_share={max_src_share * 100:.1f}%)"
+            )
+
+        if reasons:
+            return {"anomaly": True, "details": "; ".join(reasons), "source": "heuristic"}
+        return {"anomaly": False, "details": "no heuristic trigger", "source": "heuristic"}
+
+    @staticmethod
+    def _merge_anomaly_results(llm_result: dict, heuristic_result: dict) -> dict:
+        llm_anomaly = bool(llm_result.get("anomaly"))
+        heur_anomaly = bool(heuristic_result.get("anomaly"))
+
+        if llm_anomaly and heur_anomaly:
+            llm_details = llm_result.get("details", "")
+            heur_details = heuristic_result.get("details", "")
+            return {
+                "anomaly": True,
+                "details": f"LLM + Heuristic: {llm_details} | {heur_details}".strip(),
+            }
+
+        if llm_anomaly:
+            return {
+                "anomaly": True,
+                "details": llm_result.get("details", "anomalia rilevata da LLM"),
+            }
+
+        if heur_anomaly:
+            return {
+                "anomaly": True,
+                "details": f"Heuristic anomaly: {heuristic_result.get('details', '')}".strip(),
+            }
+
+        return {
+            "anomaly": False,
+            "details": llm_result.get("details", "Nessuna anomalia"),
+        }
+
+    @staticmethod
+    def _is_actionable_anomaly(signals: dict) -> bool:
+        events = int(signals.get("window_events", 0) or 0)
+        dropped = int(signals.get("dropped", 0) or 0)
+        drop_rate = float(signals.get("drop_rate", 0.0) or 0.0)
+        icmp_count = int(signals.get("icmp_count", 0) or 0)
+        icmp_avg = float(signals.get("icmp_avg_ms", 0.0) or 0.0)
+        p95 = float(signals.get("latency_p95_ms", 0.0) or 0.0)
+
+        if events < 10:
+            return False
+        if dropped > 0 and drop_rate >= 0.10:
+            return True
+        if icmp_count >= 8 and icmp_avg >= 500.0 and p95 >= 2500.0:
+            return True
+        return False
+
+    def _apply_fix(self, fix: dict):
+        """Apply the fix proposed by the LLM."""
+        action = fix.get("action")
+        host_ref = fix.get("host")
+        reason = fix.get("reason", "")
+
+        if action == "block_host" and host_ref:
+            link = self._resolve_host_link(host_ref)
+            if link:
+                self.ryu.install_drop_rule(
+                    dpid=link.get("dpid"),
+                    port=link.get("port"),
+                    src_mac=link.get("mac"),
+                )
+                resolved_host = link.get("node1", host_ref)
+                print(f"[🔧 FIX] {resolved_host} bloccato (ref={host_ref}) — {reason}")
+            else:
+                print(f"[⚠️] FIX: host ref '{host_ref}' non trovata in topology.json")
+
+        elif action == "none":
+            print(f"[🔧 FIX] Nessuna azione necessaria — {reason}")
+
+        else:
+            print(f"[⚠️] FIX: azione sconosciuta '{action}'")
+
+    # ── HELPERS ───────────────────────────────────────────────────────────────
+
+    def _mac_to_host(self, mac: str) -> str:
+        for link in self._topo_map.get("links", []):
+            if link.get("mac") == mac:
+                return link.get("node1", "unknown")
+        return "unknown"
+
+    def _resolve_host_link(self, host_ref: str):
+        """Resolve LLM host reference (hostname/mac/ip) to topology h-s link."""
+        ref = str(host_ref).strip().lower()
+        for link in self._topo_map.get("links", []):
+            if link.get("type") != "h-s":
+                continue
+            node1 = str(link.get("node1", "")).lower()
+            node2 = str(link.get("node2", "")).lower()
+            mac = str(link.get("mac", "")).lower()
+            ip = str(link.get("ip", "")).lower()
+            if ref in {node1, node2, mac, ip}:
+                return link
+        return None
+
+    def _load_topology(self) -> dict:
+        try:
+            with open(TOPOLOGY_FILE, "r") as f:
+                return json.load(f)
+        except Exception:
+            return {"links": []}

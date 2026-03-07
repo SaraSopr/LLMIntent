@@ -1,0 +1,16 @@
+STATE_MODE: {{ mode }}
+
+{% if mode == "delta" and baseline_json %}
+BASELINE_SUMMARY_JSON:
+{{ baseline_json }}
+
+NETWORK_STATE_DELTA_JSON:
+{{ state_json }}
+{% else %}
+NETWORK_STATE_JSON:
+{{ state_json }}
+{% endif %}
+
+INTENT:
+{{ intent }}
+Reply ONLY with valid JSON, no markdown.
