@@ -40,6 +40,8 @@ SLICE_CACHE_TTL_S = float(os.getenv("SLICE_CACHE_TTL_S", "4"))
 FULL_STATE_REFRESH_EVERY = int(os.getenv("LLM_FULL_STATE_REFRESH_EVERY", "0"))
 SLICE_RECENT_FLOWS_LIMIT = int(os.getenv("SLICE_RECENT_FLOWS_LIMIT", "3"))
 LLM_CALLS_LOG_FILE = os.getenv("LLM_CALLS_LOG_FILE", "network/llm_calls.jsonl")
+TOPOLOGY_FILE = os.getenv("TOPOLOGY_FILE", "topology.json")
+FIX_DEMO_MODE = os.getenv("FIX_DEMO_MODE", "").strip().lower()
 
 SLICE_DESCRIPTIONS = {
     1: "High-priority slice: low latency, for ICMP and interactive traffic",
@@ -83,6 +85,8 @@ class LLMClient:
             "anomaly": None,
             "fix": None,
         }
+        self.fix_demo_mode = FIX_DEMO_MODE
+        self._fix_demo_cycle_idx = 0
         self.calls_log_file = self._resolve_calls_log_file(LLM_CALLS_LOG_FILE)
 
     # ── PUBLIC API ────────────────────────────────────────────────────────────
@@ -151,7 +155,8 @@ class LLMClient:
         }
 
     def ask_fix(self, network_state: dict, anomaly_details: str) -> dict:
-        intent = self._render_prompt("fix_intent", anomaly_details=anomaly_details)
+        guided_details = self._apply_fix_demo_guidance(anomaly_details)
+        intent = self._render_prompt("fix_intent", anomaly_details=guided_details)
         compact_state = self._compact_state(network_state)
         result = self._query(
             intent,
@@ -160,10 +165,62 @@ class LLMClient:
             baseline_json="",
             state_json=self._json_dumps(compact_state),
         )
+        if isinstance(result, dict):
+            result["fix_source"] = "llm_direct"
         print(f"[🤖 FIX] {result}")
 
         self._log("fix", anomaly_details[:80], result)
         return result
+
+    def _apply_fix_demo_guidance(self, anomaly_details: str) -> str:
+        """
+        Optional demo steering for fast scenario coverage.
+        Enabled only when FIX_DEMO_MODE is set.
+        Values: set_link_tc | add_link | remove_link | cycle
+        """
+        mode = self.fix_demo_mode
+        if not mode:
+            return anomaly_details
+
+        forced_action = mode
+        if mode == "cycle":
+            sequence = ["set_link_tc", "add_link", "remove_link"]
+            forced_action = sequence[self._fix_demo_cycle_idx % len(sequence)]
+            self._fix_demo_cycle_idx += 1
+
+        if forced_action not in {"set_link_tc", "add_link", "remove_link"}:
+            return anomaly_details
+
+        topo_summary, _ = self._topology_summary_for_slice()
+        switches = topo_summary.get("switches", []) if isinstance(topo_summary, dict) else []
+        switch_links = topo_summary.get("switch_links", []) if isinstance(topo_summary, dict) else []
+
+        chosen = ("s1", "s2")
+        if len(switches) >= 2:
+            chosen = (switches[0], switches[1])
+        if switch_links:
+            first = switch_links[0]
+            chosen = (str(first.get("a", chosen[0])), str(first.get("b", chosen[1])))
+
+        s1, s2 = chosen
+
+        if forced_action == "set_link_tc":
+            hint = (
+                f"\n\n[DEMO_MODE] For this run, you MUST return action 'set_link_tc' "
+                f"with params {{\"node1\":\"{s1}\",\"node2\":\"{s2}\",\"bw\":20,\"delay\":\"3ms\"}}."
+            )
+        elif forced_action == "add_link":
+            hint = (
+                f"\n\n[DEMO_MODE] For this run, you MUST return action 'add_link' "
+                f"with params {{\"node1\":\"{s1}\",\"node2\":\"{s2}\",\"bw\":50,\"delay\":\"2ms\"}}."
+            )
+        else:
+            hint = (
+                f"\n\n[DEMO_MODE] For this run, you MUST return action 'remove_link' "
+                f"with params {{\"node1\":\"{s1}\",\"node2\":\"{s2}\"}}."
+            )
+
+        return anomaly_details + hint
 
     # ── PRIVATE ───────────────────────────────────────────────────────────────
 
@@ -231,6 +288,10 @@ class LLMClient:
             for action in actions:
                 if isinstance(action, dict) and action.get("type") == "SET_QUEUE":
                     return int(action.get("queue_id", 0) or 0)
+                if isinstance(action, str):
+                    match = re.search(r"SET_QUEUE\s*[:=]\s*(\d+)", action, re.IGNORECASE)
+                    if match:
+                        return int(match.group(1))
             return 0
 
         node_stats = network_state.get("node_stats", {}) or {}
@@ -244,10 +305,37 @@ class LLMClient:
             for node, stats in node_stats.items()
         }
 
+        q1_flows = 0
+        q2_flows = 0
+        q1_packets = 0
+        q2_packets = 0
+        for flow in flows:
+            queue_id = queue_from_actions(flow.get("actions"))
+            packets = int(flow.get("packet_count", 0) or 0)
+            if queue_id == 1:
+                q1_flows += 1
+                q1_packets += packets
+            elif queue_id == 2:
+                q2_flows += 1
+                q2_packets += packets
+
+        total_drops = sum(int(stats.get("d", 0) or 0) for stats in node_stats_compact.values())
+
+        topo_summary, topo_sig = self._topology_summary_for_slice()
+
         return {
             "ns": network_state.get("num_switches", "?"),
             "nf": network_state.get("num_flows", 0),
             "n": node_stats_compact,
+            "topo_sig": topo_sig,
+            "topo": topo_summary,
+            "sp": {
+                "q1_flows": q1_flows,
+                "q2_flows": q2_flows,
+                "q1_packets": q1_packets,
+                "q2_packets": q2_packets,
+                "total_drops": total_drops,
+            },
             "rf": [
                 {
                     "s": f.get("match", {}).get("eth_src") or f.get("match", {}).get("dl_src"),
@@ -261,6 +349,14 @@ class LLMClient:
         }
 
     def _state_payload_for_slice(self, compact_state: dict):
+        prev = self._state_for_delta or {}
+        topo_changed = compact_state.get("topo_sig") != prev.get("topo_sig")
+
+        if topo_changed:
+            # Force a fresh full-context turn on topology updates.
+            # This avoids reusing stale conversational memory for slice decisions.
+            self._last_response_id["slice"] = None
+
         periodic_refresh_due = (
             self.full_state_refresh_every > 0
             and self._slice_queries > 0
@@ -268,6 +364,7 @@ class LLMClient:
         )
         should_send_full = (
             self._state_for_delta is None
+            or topo_changed
             or periodic_refresh_due
             or not self._last_response_id.get("slice")
         )
@@ -275,11 +372,20 @@ class LLMClient:
             self._state_for_delta = compact_state
             return "full", "", self._json_dumps(compact_state)
 
-        prev = self._state_for_delta or {}
         delta = {}
 
         if compact_state.get("ns") != prev.get("ns"):
             delta["ns"] = compact_state.get("ns")
+
+        if compact_state.get("topo_sig") != prev.get("topo_sig"):
+            delta["topo_changed"] = True
+            delta["topo_sig"] = compact_state.get("topo_sig")
+            delta["topo"] = compact_state.get("topo", {})
+
+        prev_sp = prev.get("sp", {}) if isinstance(prev.get("sp"), dict) else {}
+        curr_sp = compact_state.get("sp", {}) if isinstance(compact_state.get("sp"), dict) else {}
+        if curr_sp != prev_sp:
+            delta["sp"] = curr_sp
 
         prev_nf = int(prev.get("nf", 0) or 0)
         curr_nf = int(compact_state.get("nf", 0) or 0)
@@ -331,11 +437,106 @@ class LLMClient:
             "src": src,
             "dst": dst,
             "protocol": protocol,
-            "num_flows": compact_state.get("num_flows"),
-            "node_stats": compact_state.get("node_stats"),
+            "num_flows": compact_state.get("nf"),
+            "node_stats": compact_state.get("n"),
+            "slice_pressure": compact_state.get("sp"),
+            "recent_flows": compact_state.get("rf"),
+            "topo_sig": compact_state.get("topo_sig"),
         }
         raw = json.dumps(seed, separators=(",", ":"), sort_keys=True)
         return hashlib.sha1(raw.encode("utf-8")).hexdigest()
+
+    @staticmethod
+    def _topology_file_path() -> Path:
+        root = Path(__file__).resolve().parents[1]
+
+        env_path = Path(TOPOLOGY_FILE)
+        if not env_path.is_absolute():
+            env_path = root / env_path
+
+        candidates = [
+            env_path,
+            root / "network" / "topology.json",
+            root / "topology.json",
+        ]
+
+        # pick existing file with best topology richness
+        best_path = candidates[0]
+        best_score = -1
+        for candidate in candidates:
+            score = LLMClient._topology_quality_score(candidate)
+            if score > best_score:
+                best_score = score
+                best_path = candidate
+
+        return best_path
+
+    @staticmethod
+    def _topology_quality_score(path: Path) -> int:
+        if not path.exists():
+            return -1
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            switches = data.get("switches", [])
+            hosts = data.get("hosts", [])
+            links = data.get("links", [])
+            hs_links = [l for l in links if isinstance(l, dict) and l.get("type") == "h-s"]
+            ss_links = [l for l in links if isinstance(l, dict) and l.get("type") == "s-s"]
+            return len(switches) * 100 + len(hosts) * 50 + len(hs_links) * 20 + len(ss_links) * 10 + len(links)
+        except Exception:
+            return -1
+
+    def _topology_summary_for_slice(self):
+        """
+        Build a compact topology summary and signature for slice decisions.
+        Signature changes force the LLM to re-evaluate routing assumptions.
+        """
+        path = self._topology_file_path()
+        try:
+            if not path.exists():
+                return {"switches": [], "switch_links": [], "host_uplinks": {}}, "missing"
+
+            topo = json.loads(path.read_text(encoding="utf-8"))
+            switches = sorted([str(s) for s in topo.get("switches", [])])
+
+            switch_links = []
+            host_uplinks = {}
+            for link in topo.get("links", []):
+                n1 = str(link.get("node1", ""))
+                n2 = str(link.get("node2", ""))
+                ltype = str(link.get("type", ""))
+
+                if ltype == "s-s" and n1 and n2:
+                    pair = sorted([n1, n2])
+                    switch_links.append({
+                        "a": pair[0],
+                        "b": pair[1],
+                        "bw": link.get("bw"),
+                        "delay": link.get("delay"),
+                    })
+
+                if ltype == "h-s":
+                    host = n1 if n1.startswith("h") else n2 if n2.startswith("h") else None
+                    sw = n1 if n1.startswith("s") else n2 if n2.startswith("s") else None
+                    if host and sw:
+                        host_uplinks[host] = sw
+
+            switch_links = sorted(
+                switch_links,
+                key=lambda x: (x.get("a", ""), x.get("b", ""))
+            )
+            host_uplinks = {k: host_uplinks[k] for k in sorted(host_uplinks.keys())}
+
+            summary = {
+                "switches": switches,
+                "switch_links": switch_links,
+                "host_uplinks": host_uplinks,
+            }
+            sig_raw = json.dumps(summary, separators=(",", ":"), sort_keys=True)
+            sig = hashlib.sha1(sig_raw.encode("utf-8")).hexdigest()[:12]
+            return summary, sig
+        except Exception:
+            return {"switches": [], "switch_links": [], "host_uplinks": {}}, "error"
 
     @staticmethod
     def _render_prompt(template_name: str, **context) -> str:

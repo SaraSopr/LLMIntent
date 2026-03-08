@@ -5,12 +5,17 @@ networkMonitor.py — Monitors blocked traffic and anomalies via RYU + LLM.
 import json
 import time
 import threading
+import os
+from pathlib import Path
+from datetime import datetime
 
 from metricStore   import MetricsStore
 from ryuController import RyuController
 from llmClient     import LLMClient
 
 TOPOLOGY_FILE = "topology.json"
+GUI_ACTIONS_FILE = os.getenv("GUI_ACTIONS_FILE", "network/gui_actions.jsonl")
+GUI_ACTIONS_RESULTS_FILE = os.getenv("GUI_ACTIONS_RESULTS_FILE", "network/gui_actions_results.jsonl")
 
 
 class NetworkMonitor:
@@ -38,11 +43,16 @@ class NetworkMonitor:
         self._last_drop_counts      = {}
         self._last_anomaly_check    = time.time()  # delay primo check
         self._prev_num_flows        = 0
+        self._processed_action_ids  = set()
+        self._actions_file_position = 0
+        self._actions_file_path     = self._resolve_path(GUI_ACTIONS_FILE)
+        self._actions_results_path  = self._resolve_path(GUI_ACTIONS_RESULTS_FILE)
 
     # ── MAIN LOOP ─────────────────────────────────────────────────────────────
 
     def monitor_blocked_traffic(self):
         while not self.stop_event.is_set():
+            self._process_gui_actions()
             self._check_drops()
             self._refresh_flow_table()
             self._maybe_check_anomalies()
@@ -99,24 +109,9 @@ class NetworkMonitor:
         if result.get("anomaly"):
             print(f"[🤖 ANOMALY] {result.get('details')}")
 
-            # 2. Ask/apply fix only when anomaly is actionable (avoid aggressive false positives)
-            if self._is_actionable_anomaly(signals):
-                fix = self.llm.ask_fix(network_state, result.get("details", ""))
-                self._apply_fix(fix)
-            else:
-                skip_reason = "Anomalia debole/non azionabile: nessun blocco host applicato"
-                print(f"[🔧 FIX] {skip_reason}")
-                if self.metrics:
-                    self.metrics.add_llm_log(
-                        "fix",
-                        "auto-skip (low confidence anomaly)",
-                        {
-                            "action": "none",
-                            "host": None,
-                            "reason": skip_reason,
-                            "guarded": True,
-                        },
-                    )
+            # 2. Ask/apply fix directly from LLM decision
+            fix = self.llm.ask_fix(network_state, result.get("details", ""))
+            self._apply_fix(fix)
         else:
             print("[🤖 LLM] Nessuna anomalia rilevata.")
 
@@ -232,26 +227,24 @@ class NetworkMonitor:
         }
 
     @staticmethod
-    def _is_actionable_anomaly(signals: dict) -> bool:
-        events = int(signals.get("window_events", 0) or 0)
-        dropped = int(signals.get("dropped", 0) or 0)
-        drop_rate = float(signals.get("drop_rate", 0.0) or 0.0)
-        icmp_count = int(signals.get("icmp_count", 0) or 0)
-        icmp_avg = float(signals.get("icmp_avg_ms", 0.0) or 0.0)
-        p95 = float(signals.get("latency_p95_ms", 0.0) or 0.0)
-
-        if events < 10:
-            return False
-        if dropped > 0 and drop_rate >= 0.10:
-            return True
-        if icmp_count >= 8 and icmp_avg >= 500.0 and p95 >= 2500.0:
-            return True
-        return False
+    def _normalize_switch_ref(value):
+        """Normalize switch references from LLM, e.g. '1' -> 's1'."""
+        if value is None:
+            return None
+        text = str(value).strip()
+        if not text:
+            return text
+        if text.startswith("s"):
+            return text
+        if text.isdigit():
+            return f"s{text}"
+        return text
 
     def _apply_fix(self, fix: dict):
         """Apply the fix proposed by the LLM."""
         action = fix.get("action")
         host_ref = fix.get("host")
+        params = fix.get("params") if isinstance(fix.get("params"), dict) else {}
         reason = fix.get("reason", "")
 
         if action == "block_host" and host_ref:
@@ -264,14 +257,89 @@ class NetworkMonitor:
                 )
                 resolved_host = link.get("node1", host_ref)
                 print(f"[🔧 FIX] {resolved_host} bloccato (ref={host_ref}) — {reason}")
+                return {"success": True}
             else:
                 print(f"[⚠️] FIX: host ref '{host_ref}' non trovata in topology.json")
+                return {"success": False, "error": f"host ref '{host_ref}' non trovata in topology.json"}
+
+        elif action == "set_link_tc":
+            node1 = self._normalize_switch_ref(params.get("node1"))
+            node2 = self._normalize_switch_ref(params.get("node2"))
+            if not node1 or not node2:
+                print("[⚠️] FIX set_link_tc: parametri mancanti (node1/node2)")
+                return {"success": False, "error": "parametri mancanti (node1/node2)"}
+
+            result = self.ryu.set_link_tc(
+                node1=node1,
+                node2=node2,
+                bw=params.get("bw"),
+                delay=params.get("delay"),
+            )
+            if result.get("success"):
+                self._update_topology_link_tc(node1, node2, params.get("bw"), params.get("delay"))
+                print(f"[🔧 FIX] TC aggiornato su {node1}<->{node2} — {reason}")
+                return {"success": True}
+            else:
+                err = result.get("error", "errore sconosciuto")
+                print(f"[⚠️] FIX set_link_tc fallita: {err}")
+                return {"success": False, "error": err}
+
+        elif action == "add_link":
+            node1 = self._normalize_switch_ref(params.get("node1"))
+            node2 = self._normalize_switch_ref(params.get("node2"))
+            if not node1 or not node2:
+                print("[⚠️] FIX add_link: parametri mancanti (node1/node2)")
+                return {"success": False, "error": "parametri mancanti (node1/node2)"}
+
+            if not (str(node1).startswith("s") and str(node2).startswith("s")):
+                err = "add_link consentito solo tra switch (sX-sY)"
+                print(f"[⚠️] FIX add_link fallita: {err}")
+                return {"success": False, "error": err}
+
+            result = self.ryu.add_link(
+                node1=node1,
+                node2=node2,
+                bw=params.get("bw"),
+                delay=params.get("delay"),
+            )
+            if result.get("success"):
+                self._add_topology_link(node1, node2, params.get("bw"), params.get("delay"))
+                print(f"[🔧 FIX] Link aggiunto {node1}<->{node2} — {reason}")
+                return {"success": True}
+            else:
+                err = result.get("error", "errore sconosciuto")
+                print(f"[⚠️] FIX add_link fallita: {err}")
+                return {"success": False, "error": err}
+
+        elif action == "remove_link":
+            node1 = self._normalize_switch_ref(params.get("node1"))
+            node2 = self._normalize_switch_ref(params.get("node2"))
+            if not node1 or not node2:
+                print("[⚠️] FIX remove_link: parametri mancanti (node1/node2)")
+                return {"success": False, "error": "parametri mancanti (node1/node2)"}
+
+            if not (str(node1).startswith("s") and str(node2).startswith("s")):
+                err = "remove_link consentito solo tra switch (sX-sY)"
+                print(f"[⚠️] FIX remove_link fallita: {err}")
+                return {"success": False, "error": err}
+
+            result = self.ryu.remove_link(node1=node1, node2=node2)
+            if result.get("success"):
+                self._remove_topology_link(node1, node2)
+                print(f"[🔧 FIX] Link rimosso {node1}<->{node2} — {reason}")
+                return {"success": True}
+            else:
+                err = result.get("error", "errore sconosciuto")
+                print(f"[⚠️] FIX remove_link fallita: {err}")
+                return {"success": False, "error": err}
 
         elif action == "none":
             print(f"[🔧 FIX] Nessuna azione necessaria — {reason}")
+            return {"success": True}
 
         else:
             print(f"[⚠️] FIX: azione sconosciuta '{action}'")
+            return {"success": False, "error": f"azione sconosciuta '{action}'"}
 
     # ── HELPERS ───────────────────────────────────────────────────────────────
 
@@ -301,3 +369,128 @@ class NetworkMonitor:
                 return json.load(f)
         except Exception:
             return {"links": []}
+
+    @staticmethod
+    def _resolve_path(path_value: str) -> Path:
+        p = Path(path_value)
+        if p.is_absolute():
+            return p
+        return Path(__file__).resolve().parents[1] / p
+
+    def _process_gui_actions(self):
+        path = self._actions_file_path
+        if not path.exists():
+            return
+
+        try:
+            file_size = path.stat().st_size
+            if file_size < self._actions_file_position:
+                self._actions_file_position = 0
+
+            with open(path, "r", encoding="utf-8") as f:
+                f.seek(self._actions_file_position)
+                new_lines = f.readlines()
+                self._actions_file_position = f.tell()
+        except Exception as e:
+            print(f"[⚠️] GUI action queue read error: {e}")
+            return
+
+        for line in new_lines:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                payload = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+
+            request_id = payload.get("request_id")
+            if not request_id or request_id in self._processed_action_ids:
+                continue
+
+            self._processed_action_ids.add(request_id)
+            result = {
+                "request_id": request_id,
+                "ts": datetime.utcnow().isoformat(timespec="milliseconds") + "Z",
+                "source": payload.get("source", "gui"),
+                "action": payload.get("action"),
+                "success": False,
+            }
+
+            try:
+                exec_result = self._apply_fix(payload)
+                if isinstance(exec_result, dict):
+                    result["success"] = bool(exec_result.get("success"))
+                    if not result["success"]:
+                        result["error"] = exec_result.get("error", "action execution failed")
+                else:
+                    ok = bool(exec_result)
+                    result["success"] = ok
+                    if not ok:
+                        result["error"] = "action execution failed"
+            except Exception as e:
+                result["error"] = str(e)
+
+            self._append_action_result(result)
+
+    def _append_action_result(self, result: dict):
+        try:
+            self._actions_results_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(self._actions_results_path, "a", encoding="utf-8") as f:
+                f.write(json.dumps(result, ensure_ascii=False) + "\n")
+        except Exception as e:
+            print(f"[⚠️] GUI action result write error: {e}")
+
+    def _persist_topology(self):
+        try:
+            with open(TOPOLOGY_FILE, "w") as f:
+                json.dump(self._topo_map, f, indent=4)
+        except Exception as e:
+            print(f"[⚠️] Persist topology fallita: {e}")
+
+    @staticmethod
+    def _same_link(a1: str, a2: str, b1: str, b2: str) -> bool:
+        return {str(a1), str(a2)} == {str(b1), str(b2)}
+
+    def _find_link_entry(self, node1: str, node2: str):
+        for link in self._topo_map.get("links", []):
+            if self._same_link(link.get("node1"), link.get("node2"), node1, node2):
+                return link
+        return None
+
+    def _update_topology_link_tc(self, node1: str, node2: str, bw=None, delay=None):
+        link = self._find_link_entry(node1, node2)
+        if not link:
+            return
+        if bw is not None:
+            link["bw"] = bw
+        if delay is not None:
+            link["delay"] = delay
+        self._persist_topology()
+
+    def _add_topology_link(self, node1: str, node2: str, bw=None, delay=None):
+        if self._find_link_entry(node1, node2):
+            self._update_topology_link_tc(node1, node2, bw=bw, delay=delay)
+            return
+        link_type = "s-s" if str(node1).startswith("s") and str(node2).startswith("s") else "dynamic"
+        new_link = {
+            "node1": node1,
+            "node2": node2,
+            "type": link_type,
+        }
+        if bw is not None:
+            new_link["bw"] = bw
+        if delay is not None:
+            new_link["delay"] = delay
+        self._topo_map.setdefault("links", []).append(new_link)
+        self._persist_topology()
+
+    def _remove_topology_link(self, node1: str, node2: str):
+        links = self._topo_map.get("links", [])
+        filtered = [
+            link for link in links
+            if not self._same_link(link.get("node1"), link.get("node2"), node1, node2)
+        ]
+        if len(filtered) != len(links):
+            self._topo_map["links"] = filtered
+            self._persist_topology()

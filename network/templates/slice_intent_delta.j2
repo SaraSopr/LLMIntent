@@ -2,6 +2,12 @@ Continue the same slice-assignment policy and same JSON schema as previous turns
 Treat this turn as an incremental patch over remembered context.
 If a field is missing, keep the previous value.
 
+Policy reminder:
+- Do NOT choose by protocol alone.
+- Prefer the less loaded slice when recent state (`sp` and `rf_add`) shows clear pressure imbalance.
+- Use protocol only as tie-breaker when pressure is similar.
+- If new drops/instability emerge, bias away from the currently more pressured slice.
+
 FLOW:
 - source: {{ src }}
 - destination: {{ dst }}
