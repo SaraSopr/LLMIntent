@@ -54,10 +54,13 @@ _load_dotenv()
 # ── CONFIG ────────────────────────────────────────────────────────────────────
 METRICS_FILE = os.getenv("METRICS_FILE", "metrics.json")
 LLM_CALLS_LOG_FILE = os.getenv("LLM_CALLS_LOG_FILE", "network/llm_calls.jsonl")
+GUI_ACTIONS_FILE = os.getenv("GUI_ACTIONS_FILE", "network/gui_actions.jsonl")
+GUI_ACTIONS_RESULTS_FILE = os.getenv("GUI_ACTIONS_RESULTS_FILE", "network/gui_actions_results.jsonl")
 DEFAULT_RUNTIME = int(os.getenv("EXPERIMENT_RUNTIME", "120"))
 DEFAULT_API_KEY = os.getenv("OPENAI_API_KEY", "")
 DEFAULT_NUM_SWITCHES = int(os.getenv("NUM_SWITCHES", "3"))
 DEFAULT_NUM_HOSTS = int(os.getenv("NUM_HOSTS", "5"))
+DEFAULT_ANOMALY_CHECK_INTERVAL = int(os.getenv("ANOMALY_CHECK_INTERVAL", "30"))
 
 class SDNExperiment:
     """
@@ -108,15 +111,20 @@ class SDNExperiment:
 
     @staticmethod
     def _reset_llm_calls_log():
-        path = Path(LLM_CALLS_LOG_FILE)
-        if not path.is_absolute():
-            path = Path(__file__).resolve().parents[1] / path
-        try:
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text("")
-            print(f"[🧾] LLM calls log azzerato: {path}")
-        except Exception as e:
-            print(f"[⚠️] Impossibile azzerare LLM calls log: {e}")
+        for label, rel_path in [
+            ("LLM calls log", LLM_CALLS_LOG_FILE),
+            ("GUI action queue", GUI_ACTIONS_FILE),
+            ("GUI action results", GUI_ACTIONS_RESULTS_FILE),
+        ]:
+            path = Path(rel_path)
+            if not path.is_absolute():
+                path = Path(__file__).resolve().parents[1] / path
+            try:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("")
+                print(f"[🧾] {label} azzerato: {path}")
+            except Exception as e:
+                print(f"[⚠️] Impossibile azzerare {label}: {e}")
 
     # ── RUN ───────────────────────────────────────────────────────────────────
 
@@ -137,6 +145,7 @@ class SDNExperiment:
             autoSetMacs=True,
         )
         self.net.start()
+        self.ryu.set_net(self.net)
 
         # ── QoS queue setup (after net.start()) ───────────────────────────
         topo_obj.setup_queues(self.net)
@@ -158,6 +167,7 @@ class SDNExperiment:
             llm=self.llm,
             stop_event=self.stop_event,
             num_switches=self.num_switches,
+            anomaly_check_interval=DEFAULT_ANOMALY_CHECK_INTERVAL,
         )
 
         # Launch threads

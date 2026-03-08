@@ -1,699 +1,966 @@
 {
     "running": false,
-    "uptime_s": 126.7,
+    "uptime_s": 62.5,
     "events": [
         {
-            "ts": 121.48,
-            "src": "h4",
-            "dst": "h1",
+            "ts": 60.31,
+            "src": "h3",
+            "dst": "h2",
             "proto": "ICMP",
-            "accepted": false,
-            "latency_ms": 1009.04,
-            "slice": 1,
-            "reason": "Slice 1 is optimized for low-latency ICMP traffic with zero queue state, minimizing delay and packet loss for h4 to h1 flow."
-        },
-        {
-            "ts": 117.84,
-            "src": "h4",
-            "dst": "h5",
-            "proto": "UDP",
             "accepted": true,
-            "latency_ms": 1428.22,
-            "slice": 1,
-            "reason": "Slice 1 is optimized for low-latency UDP traffic with zero queue state, minimizing delay and packet loss for h4 to h5 flow."
-        },
-        {
-            "ts": 114.02,
-            "src": "h1",
-            "dst": "h5",
-            "proto": "UDP",
-            "accepted": false,
-            "latency_ms": 4172.99,
-            "slice": 1,
-            "reason": "Slice 1 is optimized for low-latency UDP traffic with zero queue state, minimizing delay and packet loss for h1 to h5 flow."
-        },
-        {
-            "ts": 107.87,
-            "src": "h2",
-            "dst": "h4",
-            "proto": "ICMP",
-            "accepted": false,
-            "latency_ms": 1008.53,
-            "slice": 1,
-            "reason": "Slice 1 is optimized for low-latency ICMP traffic with zero queue state, minimizing delay and packet loss for h2 to h4 flow."
-        },
-        {
-            "ts": 104.62,
-            "src": "h1",
-            "dst": "h2",
-            "proto": "UDP",
-            "accepted": false,
-            "latency_ms": 4074.93,
-            "slice": 1,
-            "reason": "Slice 1 has zero queue and is optimized for low-latency UDP traffic, minimizing delay and packet loss for h1 to h2 flow."
-        },
-        {
-            "ts": 98.13,
-            "src": "h4",
-            "dst": "h2",
-            "proto": "TCP",
-            "accepted": false,
-            "latency_ms": 1349.84,
+            "latency_ms": 82.19,
             "slice": 2,
-            "reason": "Slice 2 is designed for bulk/high-throughput TCP traffic with zero queue state, maximizing throughput and minimizing congestion for h4 to h2 flow."
+            "reason": "Slice 1 is highly loaded with 1319 packets and 7 flows plus RF queue pressure; slice 2 is less loaded with 688 packets, 3 flows, and RF queues with lower pressure, so choose slice 2 despite ICMP preference to reduce congestion."
         },
         {
-            "ts": 94.07,
+            "ts": 56.89,
             "src": "h2",
-            "dst": "h1",
-            "proto": "ICMP",
-            "accepted": false,
-            "latency_ms": 1016.11,
-            "slice": 1,
-            "reason": "Slice 1 is optimized for low-latency ICMP traffic and zero queue state, minimizing delay and packet loss for h2 to h1 flow."
-        },
-        {
-            "ts": 90.71,
-            "src": "h2",
-            "dst": "h4",
-            "proto": "UDP",
-            "accepted": false,
-            "latency_ms": 4428.42,
-            "slice": 1,
-            "reason": "Slice 1 is optimized for low-latency UDP traffic with zero queue state, minimizing delay and packet loss for h2 to h4 flow."
-        },
-        {
-            "ts": 83.61,
-            "src": "h3",
-            "dst": "h4",
-            "proto": "UDP",
-            "accepted": true,
-            "latency_ms": 1360.2,
-            "slice": 1,
-            "reason": "Slice 1 is optimized for low-latency UDP traffic with zero queue, minimizing delay and packet loss for h3 to h4 UDP flow."
-        },
-        {
-            "ts": 79.82,
-            "src": "h2",
-            "dst": "h5",
-            "proto": "ICMP",
-            "accepted": false,
-            "latency_ms": 1017.04,
-            "slice": 1,
-            "reason": "Slice 1 is optimized for low-latency ICMP traffic with zero queue state, ensuring minimal delay and packet loss for h2 to h5 flow."
-        },
-        {
-            "ts": 76.75,
-            "src": "h3",
-            "dst": "h1",
-            "proto": "ICMP",
-            "accepted": false,
-            "latency_ms": 1010.16,
-            "slice": 1,
-            "reason": "Slice 1 is optimized for low-latency ICMP traffic with zero queue state, minimizing delay and packet loss for h3 to h1 flow."
-        },
-        {
-            "ts": 73.73,
-            "src": "h4",
-            "dst": "h5",
-            "proto": "TCP",
-            "accepted": true,
-            "latency_ms": 1643.54,
-            "slice": 2,
-            "reason": "Slice 2 is designed for bulk/high-throughput TCP traffic with zero queue state, maximizing throughput and minimizing congestion for h4 to h5 flow."
-        },
-        {
-            "ts": 69.61,
-            "src": "h4",
-            "dst": "h2",
-            "proto": "ICMP",
-            "accepted": false,
-            "latency_ms": 1070.0,
-            "slice": 1,
-            "reason": "Slice 1 is optimized for low-latency ICMP traffic with zero queue, ensuring minimal delay and packet loss for h4 to h2 flow."
-        },
-        {
-            "ts": 65.46,
-            "src": "h2",
-            "dst": "h5",
-            "proto": "ICMP",
-            "accepted": false,
-            "latency_ms": 1059.81,
-            "slice": 1,
-            "reason": "Slice 1 is tailored for low-latency ICMP traffic with zero queue state, minimizing delay and packet loss for h2 to h5 flow."
-        },
-        {
-            "ts": 62.23,
-            "src": "h3",
-            "dst": "h4",
-            "proto": "UDP",
-            "accepted": true,
-            "latency_ms": 1520.87,
-            "slice": 1,
-            "reason": "Slice 1 is optimized for low-latency UDP traffic and current zero queue state, minimizing delay and packet loss for h3 to h4 flow."
-        },
-        {
-            "ts": 58.61,
-            "src": "h4",
-            "dst": "h5",
-            "proto": "ICMP",
-            "accepted": true,
-            "latency_ms": 89.86,
-            "slice": 1,
-            "reason": "Slice 1 is optimized for low-latency ICMP traffic with current zero queue state, ensuring minimal delay and packet loss for h4 to h5."
-        },
-        {
-            "ts": 54.93,
-            "src": "h1",
-            "dst": "h2",
-            "proto": "TCP",
-            "accepted": true,
-            "latency_ms": 1709.68,
-            "slice": 2,
-            "reason": "Slice 2 is designed for bulk/high-throughput TCP traffic with zero queue state, maximizing throughput and minimizing congestion for h1 to h2 flow."
-        },
-        {
-            "ts": 51.03,
-            "src": "h3",
-            "dst": "h5",
-            "proto": "UDP",
-            "accepted": true,
-            "latency_ms": 1417.57,
-            "slice": 1,
-            "reason": "Slice 1 has zero queue and is optimized for low-latency UDP traffic, minimizing delay and packet loss for h3 to h5 flow."
-        },
-        {
-            "ts": 47.51,
-            "src": "h4",
             "dst": "h3",
             "proto": "ICMP",
             "accepted": true,
-            "latency_ms": 107.45,
-            "slice": 1,
-            "reason": "Slice 1 is optimized for low-latency ICMP traffic with zero queue, minimizing delay and packet loss for h4 to h3 flow."
-        },
-        {
-            "ts": 45.51,
-            "src": "h1",
-            "dst": "h5",
-            "proto": "TCP",
-            "accepted": true,
-            "latency_ms": 1467.7,
+            "latency_ms": 72.89,
             "slice": 2,
-            "reason": "Slice 2 is optimized for bulk/high-throughput TCP traffic with zero queue state, ensuring low congestion and maximizing throughput for h1 to h5 flow."
+            "reason": "Slice 1 is heavily congested with 1319 packets and 7 flows; slice 2 has fewer flows (3) but moderate packets (686) and less RF queue pressure, so choose slice 2 despite ICMP protocol to reduce congestion."
         },
         {
-            "ts": 41.54,
-            "src": "h3",
-            "dst": "h1",
-            "proto": "TCP",
-            "accepted": true,
-            "latency_ms": 1717.39,
-            "slice": 2,
-            "reason": "Slice 2 is designed for bulk/high-throughput TCP traffic with zero queue state, optimizing throughput and minimizing congestion for h3 to h1 flow."
-        },
-        {
-            "ts": 37.37,
+            "ts": 54.27,
             "src": "h4",
-            "dst": "h5",
-            "proto": "ICMP",
+            "dst": "h2",
+            "proto": "TCP",
             "accepted": true,
-            "latency_ms": 51.2,
-            "slice": 1,
-            "reason": "Slice 1 is optimized for low-latency ICMP traffic and zero queue state, minimizing delay and packet loss for h4 to h5 flow."
+            "latency_ms": 1440.2,
+            "slice": 2,
+            "reason": "Slice 1 is heavily loaded with 1319 packets and 7 flows and has RF queue; slice 2 is lightly loaded with 40 packets and 3 flows, so select slice 2 to minimize congestion and TCP protocol supports slice 2."
         },
         {
-            "ts": 35.07,
-            "src": "h3",
+            "ts": 50.1,
+            "src": "h4",
             "dst": "h2",
             "proto": "ICMP",
             "accepted": true,
-            "latency_ms": 72.41,
-            "slice": 1,
-            "reason": "Slice 1 is optimized for low-latency ICMP traffic and has zero queue, ensuring minimal delay and packet loss for h3 to h2 flow."
-        },
-        {
-            "ts": 32.83,
-            "src": "h2",
-            "dst": "h4",
-            "proto": "TCP",
-            "accepted": true,
-            "latency_ms": 1628.8,
+            "latency_ms": 51.71,
             "slice": 2,
-            "reason": "Slice 2 is optimized for bulk/high-throughput TCP traffic with zero queue state, making it appropriate for h2 to h4 TCP flow to avoid congestion and maximize throughput."
+            "reason": "Slice 1 has very high packet load (1319) and more flows (7) with RF queues indicating congestion. Slice 2 is less loaded with 39 packets and 3 flows, so choose slice 2 despite ICMP protocol to minimize congestion."
         },
         {
-            "ts": 29.17,
-            "src": "h3",
-            "dst": "h5",
-            "proto": "TCP",
-            "accepted": true,
-            "latency_ms": 1429.99,
-            "slice": 2,
-            "reason": "Slice 2 is designed for bulk/high-throughput TCP traffic and has zero queue, making it optimal for minimizing congestion and maximizing throughput for h3 to h5 TCP flow."
-        },
-        {
-            "ts": 25.28,
-            "src": "h3",
-            "dst": "h2",
-            "proto": "ICMP",
-            "accepted": true,
-            "latency_ms": 58.31,
-            "slice": 1,
-            "reason": "Slice 1's zero queue and low-latency optimization make it ideal for ICMP traffic requiring minimal delay and low packet loss."
-        },
-        {
-            "ts": 23.14,
+            "ts": 46.85,
             "src": "h4",
-            "dst": "h5",
+            "dst": "h2",
             "proto": "UDP",
             "accepted": true,
-            "latency_ms": 1358.89,
-            "slice": 1,
-            "reason": "Slice 1 maintains zero queue and is designed for low-latency traffic like UDP, suitable to minimize latency and avoid congestion for h4 to h5 flow."
+            "latency_ms": 1503.88,
+            "slice": 2,
+            "reason": "Slice 1 has much higher packet load (1321) and more flows (8) with RF queue, indicating congestion. Slice 2 has low packet and flow count, so select slice 2 to reduce congestion and suit UDP protocol."
         },
         {
-            "ts": 19.6,
+            "ts": 42.76,
+            "src": "h2",
+            "dst": "h3",
+            "proto": "UDP",
+            "accepted": true,
+            "latency_ms": 1507.15,
+            "slice": 2,
+            "reason": "Slice 1 has very high packet load (1321) and flows (8) with RF queue present, indicating congestion. Slice 2 is lightly loaded (14 packets, 2 flows), so select slice 2 to reduce congestion and UDP protocol supports slice 2."
+        },
+        {
+            "ts": 38.24,
+            "src": "h5",
+            "dst": "h2",
+            "proto": "ICMP",
+            "accepted": true,
+            "latency_ms": 54.93,
+            "slice": 1,
+            "reason": "Slice 2 shows much higher packet load (1308) with large RF queue; slice 1 has low packet and flow counts, so choose slice 1 to minimize congestion and latency."
+        },
+        {
+            "ts": 35.52,
+            "src": "h5",
+            "dst": "h2",
+            "proto": "TCP",
+            "accepted": true,
+            "latency_ms": 1399.52,
+            "slice": 2,
+            "reason": "Slice 2 has fewer flows (4) but comparable packets (30) versus slice 1 (6 flows, 25 packets). RF queue usage on slice 1 is higher, indicating more pressure. TCP protocol supports choosing slice 2 as tie-breaker."
+        },
+        {
+            "ts": 31.72,
+            "src": "h2",
+            "dst": "h5",
+            "proto": "ICMP",
+            "accepted": true,
+            "latency_ms": 61.02,
+            "slice": 2,
+            "reason": "Slice 1 has slightly higher flows and almost equal packets compared to slice 2, but RF shows queue on slice 1; slice 2 is less loaded overall. ICMP tie-break favors slice 1 but pressure bias directs to slice 2."
+        },
+        {
+            "ts": 29.03,
             "src": "h2",
             "dst": "h1",
-            "proto": "UDP",
-            "accepted": true,
-            "latency_ms": 1461.56,
-            "slice": 1,
-            "reason": "Slice 1 has zero queue on relevant routes and is optimized for low-latency UDP traffic, making it suitable for this flow to minimize latency and avoid congestion."
-        },
-        {
-            "ts": 15.61,
-            "src": "h4",
-            "dst": "h1",
             "proto": "ICMP",
             "accepted": true,
-            "latency_ms": 47.7,
+            "latency_ms": 76.06,
             "slice": 1,
-            "reason": "ICMP traffic benefits from low-latency slice; slice 1 has zero queue, minimizing delay and packet loss, satisfying latency-sensitive requirements."
+            "reason": "Slice 2 has significantly higher packet load (40) and more flows (6) compared to slice 1 (8 packets, 4 flows), so slice 1 is less loaded. ICMP protocol also prefers slice 1."
         },
         {
-            "ts": 13.7,
-            "src": "h3",
+            "ts": 26.45,
+            "src": "h2",
+            "dst": "h5",
+            "proto": "UDP",
+            "accepted": true,
+            "latency_ms": 1467.6,
+            "slice": 2,
+            "reason": "Slice 2 has fewer flows and higher packets but less relative load than slice 1; UDP protocol favors slice 2 as tie-breaker."
+        },
+        {
+            "ts": 22.79,
+            "src": "h4",
+            "dst": "h2",
+            "proto": "ICMP",
+            "accepted": true,
+            "latency_ms": 108.09,
+            "slice": 1,
+            "reason": "Slice 2 has 26 packets and 4 flows vs. slice 1's 8 packets and 4 flows, so slice 1 is less loaded. ICMP protocol also prefers slice 1."
+        },
+        {
+            "ts": 20.47,
+            "src": "h1",
             "dst": "h2",
             "proto": "UDP",
             "accepted": true,
-            "latency_ms": 1371.9,
-            "slice": 1,
-            "reason": "Slice 1 has zero queue and is optimized for low-latency traffic like UDP; given current state and no congestion, slice 1 is suitable for minimizing latency for h3 to h2 UDP flow."
+            "latency_ms": 1495.39,
+            "slice": 2,
+            "reason": "Slice 1 has more flows and packets (4 flows, 6 packets) versus slice 2 (2 flows, 14 packets), but considering the packet load, slice 1 has less packet pressure; however, slice 2 is less loaded in flows and suits UDP protocol tie-break."
         },
         {
-            "ts": 10.13,
+            "ts": 16.49,
+            "src": "h4",
+            "dst": "h5",
+            "proto": "ICMP",
+            "accepted": true,
+            "latency_ms": 146.43,
+            "slice": 1,
+            "reason": "Slice 1 has fewer packets (3) and only slightly fewer flows (2) than slice 2 (12 packets, 2 flows), making slice 1 less pressured. ICMP protocol favors slice 1 as tie-breaker."
+        },
+        {
+            "ts": 14.0,
             "src": "h1",
-            "dst": "h4",
+            "dst": "h5",
+            "proto": "ICMP",
+            "accepted": true,
+            "latency_ms": 85.95,
+            "slice": 1,
+            "reason": "Slice 2 has 2 flows and 12 packets, with recent queue usage on slice 2; slice 1 is less loaded. ICMP protocol also prefers slice 1 as tie-breaker."
+        },
+        {
+            "ts": 11.16,
+            "src": "h2",
+            "dst": "h3",
             "proto": "UDP",
             "accepted": true,
-            "latency_ms": 1535.59,
-            "slice": 1,
-            "reason": "Slice 1 currently has zero queue and is low-latency, suitable for UDP flow requiring minimal delay; slice 2 has zero queue but designed for bulk throughput, less ideal for latency-sensitive UDP traffic."
+            "latency_ms": 1456.43,
+            "slice": 2,
+            "reason": "Both slices have zero flows and packets, so pressure is equal. UDP protocol prefers slice 2 as a tie-breaker."
         }
     ],
     "node_stats": {
-        "h1": {
-            "tx": 5,
-            "rx": 6,
-            "drops": 2,
-            "packets": 11
-        },
-        "h4": {
-            "tx": 10,
-            "rx": 6,
-            "drops": 3,
-            "packets": 16
-        },
-        "h3": {
-            "tx": 9,
-            "rx": 1,
-            "drops": 1,
-            "packets": 10
-        },
         "h2": {
-            "tx": 7,
-            "rx": 7,
-            "drops": 5,
+            "tx": 6,
+            "rx": 8,
+            "drops": 0,
             "packets": 14
         },
-        "h5": {
-            "tx": 0,
-            "rx": 11,
+        "h3": {
+            "tx": 1,
+            "rx": 3,
             "drops": 0,
-            "packets": 11
+            "packets": 4
+        },
+        "h1": {
+            "tx": 2,
+            "rx": 1,
+            "drops": 0,
+            "packets": 3
+        },
+        "h5": {
+            "tx": 2,
+            "rx": 4,
+            "drops": 0,
+            "packets": 6
+        },
+        "h4": {
+            "tx": 5,
+            "rx": 0,
+            "drops": 0,
+            "packets": 5
         }
     },
-    "flow_table": [],
+    "flow_table": [
+        {
+            "priority": 100,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 3346,
+            "duration_sec": 0,
+            "duration_nsec": 671000000,
+            "packet_count": 7,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "SET_QUEUE:2",
+                "OUTPUT:3"
+            ],
+            "match": {
+                "dl_src": "00:00:00:00:00:03",
+                "dl_dst": "00:00:00:00:00:02"
+            },
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 100,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 30520,
+            "duration_sec": 0,
+            "duration_nsec": 661000000,
+            "packet_count": 24,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "SET_QUEUE:2",
+                "OUTPUT:4"
+            ],
+            "match": {
+                "dl_src": "00:00:00:00:00:02",
+                "dl_dst": "00:00:00:00:00:03"
+            },
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 100,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 1893010,
+            "duration_sec": 7,
+            "duration_nsec": 967000000,
+            "packet_count": 659,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "SET_QUEUE:2",
+                "OUTPUT:3"
+            ],
+            "match": {
+                "dl_src": "00:00:00:00:00:04",
+                "dl_dst": "00:00:00:00:00:02"
+            },
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 100,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 43116,
+            "duration_sec": 7,
+            "duration_nsec": 973000000,
+            "packet_count": 631,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "SET_QUEUE:2",
+                "OUTPUT:2"
+            ],
+            "match": {
+                "dl_src": "00:00:00:00:00:02",
+                "dl_dst": "00:00:00:00:00:04"
+            },
+            "table_id": 0,
+            "dpid": 3
+        },
+        {
+            "priority": 100,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 56880,
+            "duration_sec": 22,
+            "duration_nsec": 603000000,
+            "packet_count": 642,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "SET_QUEUE:1",
+                "OUTPUT:3"
+            ],
+            "match": {
+                "dl_src": "00:00:00:00:00:02",
+                "dl_dst": "00:00:00:00:00:05"
+            },
+            "table_id": 0,
+            "dpid": 1
+        },
+        {
+            "priority": 100,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 1879642,
+            "duration_sec": 22,
+            "duration_nsec": 618000000,
+            "packet_count": 654,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "SET_QUEUE:1",
+                "OUTPUT:3"
+            ],
+            "match": {
+                "dl_src": "00:00:00:00:00:05",
+                "dl_dst": "00:00:00:00:00:02"
+            },
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 100,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 1694,
+            "duration_sec": 31,
+            "duration_nsec": 832000000,
+            "packet_count": 4,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "SET_QUEUE:1",
+                "OUTPUT:2"
+            ],
+            "match": {
+                "dl_src": "00:00:00:00:00:02",
+                "dl_dst": "00:00:00:00:00:01"
+            },
+            "table_id": 0,
+            "dpid": 1
+        },
+        {
+            "priority": 100,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 15260,
+            "duration_sec": 31,
+            "duration_nsec": 839000000,
+            "packet_count": 12,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "SET_QUEUE:1",
+                "OUTPUT:3"
+            ],
+            "match": {
+                "dl_src": "00:00:00:00:00:01",
+                "dl_dst": "00:00:00:00:00:02"
+            },
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 1879600,
+            "duration_sec": 35,
+            "duration_nsec": 486000000,
+            "packet_count": 653,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:1"
+            ],
+            "match": {
+                "in_port": 3,
+                "dl_src": "00:00:00:00:00:05",
+                "dl_dst": "00:00:00:00:00:02"
+            },
+            "table_id": 0,
+            "dpid": 1
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 55368,
+            "duration_sec": 35,
+            "duration_nsec": 464000000,
+            "packet_count": 641,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:1"
+            ],
+            "match": {
+                "in_port": 3,
+                "dl_src": "00:00:00:00:00:02",
+                "dl_dst": "00:00:00:00:00:05"
+            },
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 43074,
+            "duration_sec": 38,
+            "duration_nsec": 78000000,
+            "packet_count": 630,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:2"
+            ],
+            "match": {
+                "in_port": 3,
+                "dl_src": "00:00:00:00:00:02",
+                "dl_dst": "00:00:00:00:00:04"
+            },
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 1892912,
+            "duration_sec": 38,
+            "duration_nsec": 60000000,
+            "packet_count": 658,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:1"
+            ],
+            "match": {
+                "in_port": 2,
+                "dl_src": "00:00:00:00:00:04",
+                "dl_dst": "00:00:00:00:00:02"
+            },
+            "table_id": 0,
+            "dpid": 3
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 13748,
+            "duration_sec": 41,
+            "duration_nsec": 527000000,
+            "packet_count": 11,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:1"
+            ],
+            "match": {
+                "in_port": 2,
+                "dl_src": "00:00:00:00:00:01",
+                "dl_dst": "00:00:00:00:00:02"
+            },
+            "table_id": 0,
+            "dpid": 1
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 1652,
+            "duration_sec": 41,
+            "duration_nsec": 567000000,
+            "packet_count": 3,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:1"
+            ],
+            "match": {
+                "in_port": 3,
+                "dl_src": "00:00:00:00:00:02",
+                "dl_dst": "00:00:00:00:00:01"
+            },
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 100,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 140,
+            "duration_sec": 44,
+            "duration_nsec": 440000000,
+            "packet_count": 2,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "SET_QUEUE:1",
+                "OUTPUT:3"
+            ],
+            "match": {
+                "dl_src": "00:00:00:00:00:04",
+                "dl_dst": "00:00:00:00:00:05"
+            },
+            "table_id": 0,
+            "dpid": 1
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 140,
+            "duration_sec": 44,
+            "duration_nsec": 397000000,
+            "packet_count": 2,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:1"
+            ],
+            "match": {
+                "in_port": 3,
+                "dl_src": "00:00:00:00:00:05",
+                "dl_dst": "00:00:00:00:00:04"
+            },
+            "table_id": 0,
+            "dpid": 1
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 140,
+            "duration_sec": 44,
+            "duration_nsec": 405000000,
+            "packet_count": 2,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:2"
+            ],
+            "match": {
+                "in_port": 1,
+                "dl_src": "00:00:00:00:00:05",
+                "dl_dst": "00:00:00:00:00:04"
+            },
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 42,
+            "duration_sec": 44,
+            "duration_nsec": 354000000,
+            "packet_count": 1,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:1"
+            ],
+            "match": {
+                "in_port": 2,
+                "dl_src": "00:00:00:00:00:04",
+                "dl_dst": "00:00:00:00:00:05"
+            },
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 100,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 182,
+            "duration_sec": 44,
+            "duration_nsec": 458000000,
+            "packet_count": 3,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "SET_QUEUE:1",
+                "OUTPUT:2"
+            ],
+            "match": {
+                "dl_src": "00:00:00:00:00:05",
+                "dl_dst": "00:00:00:00:00:04"
+            },
+            "table_id": 0,
+            "dpid": 3
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 42,
+            "duration_sec": 44,
+            "duration_nsec": 368000000,
+            "packet_count": 1,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:1"
+            ],
+            "match": {
+                "in_port": 2,
+                "dl_src": "00:00:00:00:00:04",
+                "dl_dst": "00:00:00:00:00:05"
+            },
+            "table_id": 0,
+            "dpid": 3
+        },
+        {
+            "priority": 100,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 140,
+            "duration_sec": 46,
+            "duration_nsec": 870000000,
+            "packet_count": 2,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "SET_QUEUE:1",
+                "OUTPUT:3"
+            ],
+            "match": {
+                "dl_src": "00:00:00:00:00:01",
+                "dl_dst": "00:00:00:00:00:05"
+            },
+            "table_id": 0,
+            "dpid": 1
+        },
+        {
+            "priority": 100,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 182,
+            "duration_sec": 46,
+            "duration_nsec": 866000000,
+            "packet_count": 3,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "SET_QUEUE:1",
+                "OUTPUT:2"
+            ],
+            "match": {
+                "dl_src": "00:00:00:00:00:05",
+                "dl_dst": "00:00:00:00:00:01"
+            },
+            "table_id": 0,
+            "dpid": 1
+        },
+        {
+            "priority": 0,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 6400,
+            "duration_sec": 54,
+            "duration_nsec": 69000000,
+            "packet_count": 65,
+            "length": 80,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:CONTROLLER"
+            ],
+            "match": {},
+            "table_id": 0,
+            "dpid": 1
+        },
+        {
+            "priority": 0,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 6540,
+            "duration_sec": 54,
+            "duration_nsec": 80000000,
+            "packet_count": 67,
+            "length": 80,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:CONTROLLER"
+            ],
+            "match": {},
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 0,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 5000,
+            "duration_sec": 54,
+            "duration_nsec": 90000000,
+            "packet_count": 64,
+            "length": 80,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:CONTROLLER"
+            ],
+            "match": {},
+            "table_id": 0,
+            "dpid": 3
+        }
+    ],
     "llm_logs": [
         {
-            "ts": 123.72,
+            "ts": 60.09,
             "type": "slice",
-            "prompt": "UDP h1->h3",
+            "prompt": "ICMP h3->h2",
             "response": {
-                "slice": 1,
-                "reason": "Slice 1 is optimized for low-latency UDP traffic with zero queue state, minimizing delay and packet loss for h1 to h3 flow."
+                "slice": 2,
+                "reason": "Slice 1 is highly loaded with 1319 packets and 7 flows plus RF queue pressure; slice 2 is less loaded with 688 packets, 3 flows, and RF queues with lower pressure, so choose slice 2 despite ICMP preference to reduce congestion."
             }
         },
         {
-            "ts": 120.47,
+            "ts": 56.81,
             "type": "slice",
-            "prompt": "ICMP h4->h1",
+            "prompt": "ICMP h2->h3",
             "response": {
-                "slice": 1,
-                "reason": "Slice 1 is optimized for low-latency ICMP traffic with zero queue state, minimizing delay and packet loss for h4 to h1 flow."
+                "slice": 2,
+                "reason": "Slice 1 is heavily congested with 1319 packets and 7 flows; slice 2 has fewer flows (3) but moderate packets (686) and less RF queue pressure, so choose slice 2 despite ICMP protocol to reduce congestion."
             }
         },
         {
-            "ts": 116.4,
-            "type": "slice",
-            "prompt": "UDP h4->h5",
-            "response": {
-                "slice": 1,
-                "reason": "Slice 1 is optimized for low-latency UDP traffic with zero queue state, minimizing delay and packet loss for h4 to h5 flow."
-            }
-        },
-        {
-            "ts": 109.84,
-            "type": "slice",
-            "prompt": "UDP h1->h5",
-            "response": {
-                "slice": 1,
-                "reason": "Slice 1 is optimized for low-latency UDP traffic with zero queue state, minimizing delay and packet loss for h1 to h5 flow."
-            }
-        },
-        {
-            "ts": 106.86,
-            "type": "slice",
-            "prompt": "ICMP h2->h4",
-            "response": {
-                "slice": 1,
-                "reason": "Slice 1 is optimized for low-latency ICMP traffic with zero queue state, minimizing delay and packet loss for h2 to h4 flow."
-            }
-        },
-        {
-            "ts": 103.7,
+            "ts": 56.7,
             "type": "fix",
-            "prompt": "LLM + Heuristic: High drop rate (0.2692) with multiple nodes experiencing drops,",
+            "prompt": "high latency p95=1503.88ms and avg=724.17ms; significant bidirectional traffic w",
             "response": {
-                "action": "block_host",
-                "host": "h2",
-                "reason": "Host h2 has multiple drops (4 drops) and significantly contributes to the high drop rate and network instability, warranting blocking to mitigate the issue."
+                "action": "none",
+                "host": null,
+                "params": {},
+                "reason": "Despite high latency and persistent bidirectional traffic, no packet drops or clearly harmful host behavior is observed; conservative approach advises continued monitoring without intervention.",
+                "fix_source": "llm_direct"
             }
         },
         {
-            "ts": 102.22,
+            "ts": 55.11,
             "type": "anomaly",
             "prompt": "network state analysis",
             "response": {
                 "anomaly": true,
-                "details": "High drop rate (0.2692) with multiple nodes experiencing drops, elevated latencies (latency_avg_ms=1192.38, icmp_avg_ms=509.1), and recent flow traffic spikes indicate network instability and performance issues"
+                "details": "high latency p95=1503.88ms and avg=724.17ms; significant bidirectional traffic with over 600 packets each between hosts 00:00:00:00:00:02 and 00:00:00:00:00:05; no drops but suspicious persistent traffic pattern"
             }
         },
         {
-            "ts": 100.54,
-            "type": "slice",
-            "prompt": "UDP h1->h2",
-            "response": {
-                "slice": 1,
-                "reason": "Slice 1 has zero queue and is optimized for low-latency UDP traffic, minimizing delay and packet loss for h1 to h2 flow."
-            }
-        },
-        {
-            "ts": 96.76,
+            "ts": 52.82,
             "type": "slice",
             "prompt": "TCP h4->h2",
             "response": {
                 "slice": 2,
-                "reason": "Slice 2 is designed for bulk/high-throughput TCP traffic with zero queue state, maximizing throughput and minimizing congestion for h4 to h2 flow."
+                "reason": "Slice 1 is heavily loaded with 1319 packets and 7 flows and has RF queue; slice 2 is lightly loaded with 40 packets and 3 flows, so select slice 2 to minimize congestion and TCP protocol supports slice 2."
             }
         },
         {
-            "ts": 93.05,
+            "ts": 50.04,
+            "type": "slice",
+            "prompt": "ICMP h4->h2",
+            "response": {
+                "slice": 2,
+                "reason": "Slice 1 has very high packet load (1319) and more flows (7) with RF queues indicating congestion. Slice 2 is less loaded with 39 packets and 3 flows, so choose slice 2 despite ICMP protocol to minimize congestion."
+            }
+        },
+        {
+            "ts": 48.32,
+            "type": "fix",
+            "prompt": "high latency p95=1495.39ms and latency_avg=714.42ms; large bidirectional traffic",
+            "response": {
+                "action": "none",
+                "host": null,
+                "params": {},
+                "reason": "Latency remains high with bidirectional traffic but no packet drops or clear harmful behavior from any host; conservative approach favors monitoring without aggressive changes.",
+                "fix_source": "llm_direct"
+            }
+        },
+        {
+            "ts": 46.76,
+            "type": "anomaly",
+            "prompt": "network state analysis",
+            "response": {
+                "anomaly": true,
+                "details": "high latency p95=1495.39ms and latency_avg=714.42ms; large bidirectional traffic between 00:00:00:00:00:02 and 00:00:00:00:00:05 with over 600 packets each; no drops but suspicious traffic pattern"
+            }
+        },
+        {
+            "ts": 45.33,
+            "type": "slice",
+            "prompt": "UDP h4->h2",
+            "response": {
+                "slice": 2,
+                "reason": "Slice 1 has much higher packet load (1321) and more flows (8) with RF queue, indicating congestion. Slice 2 has low packet and flow count, so select slice 2 to reduce congestion and suit UDP protocol."
+            }
+        },
+        {
+            "ts": 41.24,
+            "type": "slice",
+            "prompt": "UDP h2->h3",
+            "response": {
+                "slice": 2,
+                "reason": "Slice 1 has very high packet load (1321) and flows (8) with RF queue present, indicating congestion. Slice 2 is lightly loaded (14 packets, 2 flows), so select slice 2 to reduce congestion and UDP protocol supports slice 2."
+            }
+        },
+        {
+            "ts": 38.24,
+            "type": "fix",
+            "prompt": "high latency p95=1467.6ms and avg=612.12ms with increased ICMP count=5; flows sh",
+            "response": {
+                "action": "none",
+                "host": null,
+                "params": {},
+                "reason": "High latency and increased ICMP count likely caused by network conditions without clear evidence of harmful hosts or overloaded links; no aggressive action justified at this time.",
+                "fix_source": "llm_direct"
+            }
+        },
+        {
+            "ts": 38.17,
+            "type": "slice",
+            "prompt": "ICMP h5->h2",
+            "response": {
+                "slice": 1,
+                "reason": "Slice 2 shows much higher packet load (1308) with large RF queue; slice 1 has low packet and flow counts, so choose slice 1 to minimize congestion and latency."
+            }
+        },
+        {
+            "ts": 36.68,
+            "type": "anomaly",
+            "prompt": "network state analysis",
+            "response": {
+                "anomaly": true,
+                "details": "high latency p95=1467.6ms and avg=612.12ms with increased ICMP count=5; flows show heavy bidirectional traffic between src=00:00:00:00:00:02 and dst=00:00:00:00:00:05 indicating possible instability or loop"
+            }
+        },
+        {
+            "ts": 34.12,
+            "type": "slice",
+            "prompt": "TCP h5->h2",
+            "response": {
+                "slice": 2,
+                "reason": "Slice 2 has fewer flows (4) but comparable packets (30) versus slice 1 (6 flows, 25 packets). RF queue usage on slice 1 is higher, indicating more pressure. TCP protocol supports choosing slice 2 as tie-breaker."
+            }
+        },
+        {
+            "ts": 31.65,
+            "type": "slice",
+            "prompt": "ICMP h2->h5",
+            "response": {
+                "slice": 2,
+                "reason": "Slice 1 has slightly higher flows and almost equal packets compared to slice 2, but RF shows queue on slice 1; slice 2 is less loaded overall. ICMP tie-break favors slice 1 but pressure bias directs to slice 2."
+            }
+        },
+        {
+            "ts": 28.95,
             "type": "slice",
             "prompt": "ICMP h2->h1",
             "response": {
                 "slice": 1,
-                "reason": "Slice 1 is optimized for low-latency ICMP traffic and zero queue state, minimizing delay and packet loss for h2 to h1 flow."
+                "reason": "Slice 2 has significantly higher packet load (40) and more flows (6) compared to slice 1 (8 packets, 4 flows), so slice 1 is less loaded. ICMP protocol also prefers slice 1."
             }
         },
         {
-            "ts": 86.27,
-            "type": "slice",
-            "prompt": "UDP h2->h4",
-            "response": {
-                "slice": 1,
-                "reason": "Slice 1 is optimized for low-latency UDP traffic with zero queue state, minimizing delay and packet loss for h2 to h4 flow."
-            }
-        },
-        {
-            "ts": 82.24,
-            "type": "slice",
-            "prompt": "UDP h3->h4",
-            "response": {
-                "slice": 1,
-                "reason": "Slice 1 is optimized for low-latency UDP traffic with zero queue, minimizing delay and packet loss for h3 to h4 UDP flow."
-            }
-        },
-        {
-            "ts": 78.8,
-            "type": "slice",
-            "prompt": "ICMP h2->h5",
-            "response": {
-                "slice": 1,
-                "reason": "Slice 1 is optimized for low-latency ICMP traffic with zero queue state, ensuring minimal delay and packet loss for h2 to h5 flow."
-            }
-        },
-        {
-            "ts": 75.73,
-            "type": "slice",
-            "prompt": "ICMP h3->h1",
-            "response": {
-                "slice": 1,
-                "reason": "Slice 1 is optimized for low-latency ICMP traffic with zero queue state, minimizing delay and packet loss for h3 to h1 flow."
-            }
-        },
-        {
-            "ts": 72.07,
-            "type": "slice",
-            "prompt": "TCP h4->h5",
-            "response": {
-                "slice": 2,
-                "reason": "Slice 2 is designed for bulk/high-throughput TCP traffic with zero queue state, maximizing throughput and minimizing congestion for h4 to h5 flow."
-            }
-        },
-        {
-            "ts": 70.94,
-            "type": "fix",
-            "prompt": "auto-skip (low confidence anomaly)",
-            "response": {
-                "action": "none",
-                "host": null,
-                "reason": "Anomalia debole/non azionabile: nessun blocco host applicato",
-                "guarded": true
-            }
-        },
-        {
-            "ts": 70.94,
+            "ts": 26.63,
             "type": "anomaly",
             "prompt": "network state analysis",
             "response": {
-                "anomaly": true,
-                "details": "Elevated drop rate (0.0556), sustained packet drops on h2, high latency (latency_avg_ms=1005.93), and significant flow growth (20) indicate performance degradation and instability"
+                "anomaly": false,
+                "details": "window_events=5 below threshold; no drops or blocking; moderate flow growth 16 but no source dominance (max_src_share=0.4)"
             }
         },
         {
-            "ts": 68.53,
+            "ts": 24.97,
+            "type": "slice",
+            "prompt": "UDP h2->h5",
+            "response": {
+                "slice": 2,
+                "reason": "Slice 2 has fewer flows and higher packets but less relative load than slice 1; UDP protocol favors slice 2 as tie-breaker."
+            }
+        },
+        {
+            "ts": 22.67,
             "type": "slice",
             "prompt": "ICMP h4->h2",
             "response": {
                 "slice": 1,
-                "reason": "Slice 1 is optimized for low-latency ICMP traffic with zero queue, ensuring minimal delay and packet loss for h4 to h2 flow."
+                "reason": "Slice 2 has 26 packets and 4 flows vs. slice 1's 8 packets and 4 flows, so slice 1 is less loaded. ICMP protocol also prefers slice 1."
             }
         },
         {
-            "ts": 64.39,
+            "ts": 18.97,
             "type": "slice",
-            "prompt": "ICMP h2->h5",
-            "response": {
-                "slice": 1,
-                "reason": "Slice 1 is tailored for low-latency ICMP traffic with zero queue state, minimizing delay and packet loss for h2 to h5 flow."
-            }
-        },
-        {
-            "ts": 60.7,
-            "type": "slice",
-            "prompt": "UDP h3->h4",
-            "response": {
-                "slice": 1,
-                "reason": "Slice 1 is optimized for low-latency UDP traffic and current zero queue state, minimizing delay and packet loss for h3 to h4 flow."
-            }
-        },
-        {
-            "ts": 58.51,
-            "type": "slice",
-            "prompt": "ICMP h4->h5",
-            "response": {
-                "slice": 1,
-                "reason": "Slice 1 is optimized for low-latency ICMP traffic with current zero queue state, ensuring minimal delay and packet loss for h4 to h5."
-            }
-        },
-        {
-            "ts": 53.21,
-            "type": "slice",
-            "prompt": "TCP h1->h2",
+            "prompt": "UDP h1->h2",
             "response": {
                 "slice": 2,
-                "reason": "Slice 2 is designed for bulk/high-throughput TCP traffic with zero queue state, maximizing throughput and minimizing congestion for h1 to h2 flow."
+                "reason": "Slice 1 has more flows and packets (4 flows, 6 packets) versus slice 2 (2 flows, 14 packets), but considering the packet load, slice 1 has less packet pressure; however, slice 2 is less loaded in flows and suits UDP protocol tie-break."
             }
         },
         {
-            "ts": 49.61,
-            "type": "slice",
-            "prompt": "UDP h3->h5",
-            "response": {
-                "slice": 1,
-                "reason": "Slice 1 has zero queue and is optimized for low-latency UDP traffic, minimizing delay and packet loss for h3 to h5 flow."
-            }
-        },
-        {
-            "ts": 47.39,
-            "type": "slice",
-            "prompt": "ICMP h4->h3",
-            "response": {
-                "slice": 1,
-                "reason": "Slice 1 is optimized for low-latency ICMP traffic with zero queue, minimizing delay and packet loss for h4 to h3 flow."
-            }
-        },
-        {
-            "ts": 44.03,
-            "type": "slice",
-            "prompt": "TCP h1->h5",
-            "response": {
-                "slice": 2,
-                "reason": "Slice 2 is optimized for bulk/high-throughput TCP traffic with zero queue state, ensuring low congestion and maximizing throughput for h1 to h5 flow."
-            }
-        },
-        {
-            "ts": 39.82,
-            "type": "slice",
-            "prompt": "TCP h3->h1",
-            "response": {
-                "slice": 2,
-                "reason": "Slice 2 is designed for bulk/high-throughput TCP traffic with zero queue state, optimizing throughput and minimizing congestion for h3 to h1 flow."
-            }
-        },
-        {
-            "ts": 39.52,
-            "type": "fix",
-            "prompt": "auto-skip (low confidence anomaly)",
-            "response": {
-                "action": "none",
-                "host": null,
-                "reason": "Anomalia debole/non azionabile: nessun blocco host applicato",
-                "guarded": true
-            }
-        },
-        {
-            "ts": 39.52,
+            "ts": 16.68,
             "type": "anomaly",
             "prompt": "network state analysis",
             "response": {
-                "anomaly": true,
-                "details": "High average latency (latency_avg_ms=901.63), high TCP and UDP avg latency (tcp_avg_ms=1529.39, udp_avg_ms=1431.99), and noticeable flow growth (flow_growth=23) indicating potential performance degradation and instability"
+                "anomaly": false,
+                "details": "Low sample window_events=2; no drops or blocked rules; latency notably high but inconsistent with low sample size"
             }
         },
         {
-            "ts": 37.31,
+            "ts": 16.34,
             "type": "slice",
             "prompt": "ICMP h4->h5",
             "response": {
                 "slice": 1,
-                "reason": "Slice 1 is optimized for low-latency ICMP traffic and zero queue state, minimizing delay and packet loss for h4 to h5 flow."
+                "reason": "Slice 1 has fewer packets (3) and only slightly fewer flows (2) than slice 2 (12 packets, 2 flows), making slice 1 less pressured. ICMP protocol favors slice 1 as tie-breaker."
             }
         },
         {
-            "ts": 34.99,
+            "ts": 13.91,
             "type": "slice",
-            "prompt": "ICMP h3->h2",
+            "prompt": "ICMP h1->h5",
             "response": {
                 "slice": 1,
-                "reason": "Slice 1 is optimized for low-latency ICMP traffic and has zero queue, ensuring minimal delay and packet loss for h3 to h2 flow."
+                "reason": "Slice 2 has 2 flows and 12 packets, with recent queue usage on slice 2; slice 1 is less loaded. ICMP protocol also prefers slice 1 as tie-breaker."
             }
         },
         {
-            "ts": 31.19,
+            "ts": 9.7,
             "type": "slice",
-            "prompt": "TCP h2->h4",
+            "prompt": "UDP h2->h3",
             "response": {
                 "slice": 2,
-                "reason": "Slice 2 is optimized for bulk/high-throughput TCP traffic with zero queue state, making it appropriate for h2 to h4 TCP flow to avoid congestion and maximize throughput."
-            }
-        },
-        {
-            "ts": 27.73,
-            "type": "slice",
-            "prompt": "TCP h3->h5",
-            "response": {
-                "slice": 2,
-                "reason": "Slice 2 is designed for bulk/high-throughput TCP traffic and has zero queue, making it optimal for minimizing congestion and maximizing throughput for h3 to h5 TCP flow."
-            }
-        },
-        {
-            "ts": 25.21,
-            "type": "slice",
-            "prompt": "ICMP h3->h2",
-            "response": {
-                "slice": 1,
-                "reason": "Slice 1's zero queue and low-latency optimization make it ideal for ICMP traffic requiring minimal delay and low packet loss."
-            }
-        },
-        {
-            "ts": 21.77,
-            "type": "slice",
-            "prompt": "UDP h4->h5",
-            "response": {
-                "slice": 1,
-                "reason": "Slice 1 maintains zero queue and is designed for low-latency traffic like UDP, suitable to minimize latency and avoid congestion for h4 to h5 flow."
-            }
-        },
-        {
-            "ts": 18.12,
-            "type": "slice",
-            "prompt": "UDP h2->h1",
-            "response": {
-                "slice": 1,
-                "reason": "Slice 1 has zero queue on relevant routes and is optimized for low-latency UDP traffic, making it suitable for this flow to minimize latency and avoid congestion."
-            }
-        },
-        {
-            "ts": 15.55,
-            "type": "slice",
-            "prompt": "ICMP h4->h1",
-            "response": {
-                "slice": 1,
-                "reason": "ICMP traffic benefits from low-latency slice; slice 1 has zero queue, minimizing delay and packet loss, satisfying latency-sensitive requirements."
-            }
-        },
-        {
-            "ts": 12.31,
-            "type": "slice",
-            "prompt": "UDP h3->h2",
-            "response": {
-                "slice": 1,
-                "reason": "Slice 1 has zero queue and is optimized for low-latency traffic like UDP; given current state and no congestion, slice 1 is suitable for minimizing latency for h3 to h2 UDP flow."
-            }
-        },
-        {
-            "ts": 8.59,
-            "type": "slice",
-            "prompt": "UDP h1->h4",
-            "response": {
-                "slice": 1,
-                "reason": "Slice 1 currently has zero queue and is low-latency, suitable for UDP flow requiring minimal delay; slice 2 has zero queue but designed for bulk throughput, less ideal for latency-sensitive UDP traffic."
+                "reason": "Both slices have zero flows and packets, so pressure is equal. UDP protocol prefers slice 2 as a tie-breaker."
             }
         }
     ],
-    "ts_updated": 1772900113.155572
+    "ts_updated": 1772971265.4172518
 }

@@ -144,7 +144,95 @@ class SidebarManager:
             f"Aggiornato ogni {self.refresh_sec}s | {datetime.now().strftime('%H:%M:%S')}"
         )
 
+        self.link_controls()
+
         return None, None
+
+    def link_controls(self):
+        st.sidebar.markdown("---")
+        st.sidebar.markdown("<div class='sec-header'>🛠️ Gestione Link</div>", unsafe_allow_html=True)
+
+        all_nodes = sorted(set(self.topo_data.get("hosts", [])) | set(self.topo_data.get("switches", [])))
+        if len(all_nodes) < 2:
+            st.sidebar.caption("Nodi insufficienti per operazioni link")
+            return
+
+        existing_links = []
+        seen_pairs = set()
+        for link in self.topo_data.get("links", []):
+            n1 = link.get("node1")
+            n2 = link.get("node2")
+            if not n1 or not n2:
+                continue
+            pair = tuple(sorted((str(n1), str(n2))))
+            if pair in seen_pairs:
+                continue
+            seen_pairs.add(pair)
+            existing_links.append(pair)
+
+        switch_nodes = sorted(self.topo_data.get("switches", []))
+        existing_switch_links = [
+            p for p in existing_links
+            if p[0].startswith("s") and p[1].startswith("s")
+        ]
+
+        action = st.sidebar.selectbox(
+            "Azione link",
+            ["set_link_tc", "add_link", "remove_link"],
+            key="gui_link_action",
+        )
+
+        if action in {"set_link_tc", "remove_link"}:
+            selectable = existing_switch_links if action == "remove_link" else existing_links
+            if not selectable:
+                st.sidebar.warning("Nessun link disponibile in topologia")
+                return
+            labels = [f"{a} ↔ {b}" for a, b in selectable]
+            selected_label = st.sidebar.selectbox("Link esistente", labels, key=f"{action}_pair")
+            idx = labels.index(selected_label)
+            node1, node2 = selectable[idx]
+        else:
+            if len(switch_nodes) < 2:
+                st.sidebar.warning("Servono almeno due switch per aggiungere un link s-s")
+                return
+            c1, c2 = st.sidebar.columns(2)
+            with c1:
+                node1 = st.selectbox("Switch 1", switch_nodes, key=f"{action}_node1")
+            with c2:
+                node2_choices = [n for n in switch_nodes if n != node1]
+                node2 = st.selectbox("Switch 2", node2_choices, key=f"{action}_node2")
+
+        params = {"node1": node1, "node2": node2}
+
+        if action in {"set_link_tc", "add_link"}:
+            use_bw = st.sidebar.checkbox("Imposta bandwidth (Mbps)", value=(action == "set_link_tc"), key=f"{action}_use_bw")
+            if use_bw:
+                bw = st.sidebar.number_input("BW Mbps", min_value=1, max_value=10000, value=20, step=1, key=f"{action}_bw")
+                params["bw"] = float(bw)
+
+            delay = st.sidebar.text_input("Delay (es. 3ms)", value="" if action == "add_link" else "3ms", key=f"{action}_delay")
+            if delay.strip():
+                params["delay"] = delay.strip()
+
+        if st.sidebar.button("Invia azione", use_container_width=True, key=f"submit_{action}"):
+            try:
+                request_id = self.controller.enqueue_action(action=action, params=params, reason="manual_gui")
+                st.session_state["last_gui_action_id"] = request_id
+                st.toast(f"Azione in coda: {action}")
+            except Exception as e:
+                st.sidebar.error(f"Invio azione fallito: {e}")
+
+        pending_id = st.session_state.get("last_gui_action_id")
+        if pending_id:
+            result = self.controller.get_action_result(pending_id)
+            if not result:
+                st.sidebar.info("Azione in attesa di esecuzione...")
+            else:
+                if result.get("success"):
+                    st.sidebar.success(f"✅ {result.get('action')} eseguita")
+                else:
+                    err = result.get("error", "errore sconosciuto")
+                    st.sidebar.error(f"❌ {result.get('action')} fallita: {err}")
 
     @staticmethod
     def _ok_response(resp):

@@ -13,7 +13,7 @@ from DataLoader import DataLoader
 from SDNController import SDNController
 from SidebarManager import SidebarManager
 from Visualizer import Visualizer
-from config import REFRESH_SEC, PATH_LLM_CALLS
+from config import REFRESH_SEC, PATH_LLM_CALLS, PATH_GUI_ACTIONS_RESULTS
 
 
 class Dashboard:
@@ -794,6 +794,49 @@ class Dashboard:
         st.code(response, language="text")
 
     @staticmethod
+    def render_gui_actions(log_path):
+        st.markdown("<div class='sec-header'>🧰 Ultime azioni GUI</div>", unsafe_allow_html=True)
+
+        if not log_path.exists():
+            st.caption("Nessuna azione GUI registrata")
+            return
+
+        entries = []
+        try:
+            with open(log_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        entries.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        continue
+        except Exception as e:
+            st.error(f"Errore lettura azioni GUI: {e}")
+            return
+
+        if not entries:
+            st.caption("File azioni GUI vuoto")
+            return
+
+        rows = []
+        for item in entries[-10:][::-1]:
+            ts = str(item.get("ts", ""))
+            action = item.get("action", "?")
+            success = bool(item.get("success"))
+            status = "✅ OK" if success else "❌ FAIL"
+            error = item.get("error", "")
+            rows.append({
+                "time": ts[11:19] if len(ts) >= 19 else ts,
+                "action": action,
+                "status": status,
+                "error": error,
+            })
+
+        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+
+    @staticmethod
     def _infer_blocked_hosts_from_flows(topo_data, flow_table):
         if not topo_data or not flow_table:
             return []
@@ -940,6 +983,8 @@ class Dashboard:
 
         with tab_llm_raw:
             self.render_llm_raw_calls(PATH_LLM_CALLS)
+
+        self.render_gui_actions(PATH_GUI_ACTIONS_RESULTS)
 
         if node_stats:
             st.markdown("---")

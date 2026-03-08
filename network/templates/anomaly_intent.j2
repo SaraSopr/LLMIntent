@@ -1,6 +1,10 @@
 Analyse the provided network state and detect operational anomalies.
 Use `anomaly_signals` as primary indicators, then validate with node_stats and recent_flows.
 
+Low-sample guard:
+- If `window_events` is low (e.g. < 6), default to `"anomaly": false`.
+- In low-sample windows, return `"anomaly": true` only with very strong evidence (clear drops, extreme latency, or repeated consistent symptoms).
+
 Classify as anomaly when one or more are true:
 - sustained drops / elevated drop_rate,
 - latency degradation (especially ICMP latency),

@@ -9,7 +9,17 @@ SLICE 1: low-latency, limited capacity.
 SLICE 2: bulk/high-throughput, latency-tolerant.
 
 Goal: minimize congestion, packet loss, and latency where needed.
-Do not use static-only rules; use provided state.
+Use provided state (especially `sp`, `rf`, `n`) and avoid static protocol-only mapping.
+
+Decision policy:
+1) Estimate current pressure per slice from `sp` (`q1_packets/q2_packets`, `q1_flows/q2_flows`) and from `rf` queue usage.
+2) If one slice is clearly more loaded (>= 20% more packet pressure), prefer the less loaded slice.
+3) Use protocol only as tie-breaker when pressure is similar.
+	- ICMP tends to prefer slice 1
+	- TCP/UDP tends to prefer slice 2
+4) If `n` shows host drops increasing, avoid the slice currently associated with higher pressure.
+
+Important: if state suggests the non-default slice is healthier, choose it even if protocol would suggest the opposite.
 
 Reply ONLY JSON:
 {"slice":1 or 2,"reason":"short technical explanation"}

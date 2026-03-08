@@ -1,6 +1,34 @@
 The following anomaly was detected: '{{ anomaly_details }}'.
-Propose a fix. Available actions: 'block_host' or 'none'.
-Use conservative policy: choose 'none' unless there is strong host-specific evidence (drops or clearly dominant harmful source).
-Do NOT block a host only for generic high latency or global flow growth without host-level evidence.
-When action is 'block_host', prefer a topology hostname like h1/h2/h3; avoid MAC/IP unless hostname is unknown.
-Reply ONLY with: {"action": "block_host" or "none", "host": "<hostname or mac/ip or null>", "reason": "..."}
+Propose ONE fix action.
+
+Available actions:
+- 'block_host'
+- 'set_link_tc'
+- 'add_link'
+- 'remove_link'
+- 'none'
+
+Conservative policy:
+- Prefer 'none' unless there is clear and actionable evidence.
+- Do NOT use aggressive actions without concrete signal support.
+
+Action rules:
+- block_host: use when one host is clearly harmful.
+	- prefer topology hostname like h1/h2/h3 (avoid MAC/IP unless hostname unavailable).
+- set_link_tc: use to reduce congestion/latency on a specific existing link.
+	- params must include node1, node2, and at least one of bw or delay.
+- add_link: use to propose a new direct path between two existing nodes.
+	- allowed only between switches (sX, sY).
+	- params must include node1 and node2.
+	- optional params: bw, delay.
+- remove_link: use to remove a suspicious or overloaded link.
+	- allowed only between switches (sX, sY).
+	- params must include node1 and node2.
+
+Reply ONLY with strict JSON in one of these forms:
+
+{"action":"block_host","host":"hX","params":{},"reason":"..."}
+{"action":"set_link_tc","host":null,"params":{"node1":"s1","node2":"s2","bw":20,"delay":"3ms"},"reason":"..."}
+{"action":"add_link","host":null,"params":{"node1":"s1","node2":"s3","bw":50,"delay":"2ms"},"reason":"..."}
+{"action":"remove_link","host":null,"params":{"node1":"s1","node2":"s2"},"reason":"..."}
+{"action":"none","host":null,"params":{},"reason":"..."}

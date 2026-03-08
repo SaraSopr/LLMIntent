@@ -4,6 +4,7 @@ ryuController.py — Wrapper for RYU REST API interactions.
 
 import os
 import requests
+from typing import Optional
 
 RYU_REST = os.getenv("RYU_REST_URL", "http://127.0.0.1:8080")
 
@@ -11,8 +12,13 @@ RYU_REST = os.getenv("RYU_REST_URL", "http://127.0.0.1:8080")
 class RyuController:
     """Handles all communication with the RYU SDN controller via REST."""
 
-    def __init__(self, base_url: str = RYU_REST):
+    def __init__(self, base_url: str = RYU_REST, net=None):
         self.base_url = base_url
+        self.net = net
+
+    def set_net(self, net):
+        """Attach live Mininet instance for write operations on links."""
+        self.net = net
 
     # ── QUERIES ───────────────────────────────────────────────────────────────
 
@@ -134,3 +140,170 @@ class RyuController:
             )
         except Exception as e:
             print(f"[⚠️] delete_flow: {e}")
+
+    # ── GENERIC WRITE ACTIONS (MININET WRAPPER) ─────────────────────────────
+
+    @staticmethod
+    def _delay_to_tc(delay: Optional[str]) -> Optional[str]:
+        if delay is None:
+            return None
+        value = str(delay).strip()
+        if not value:
+            return None
+        if value.endswith(("ms", "s", "us")):
+            return value
+        return f"{value}ms"
+
+    def set_link_tc(self, node1: str, node2: str,
+                    bw: Optional[float] = None,
+                    delay: Optional[str] = None) -> dict:
+        if self.net is None:
+            return {
+                "success": False,
+                "action": "set_link_tc",
+                "node1": node1,
+                "node2": node2,
+                "error": "Mininet net non collegata al controller",
+            }
+
+        try:
+            n1 = self.net.get(node1)
+            n2 = self.net.get(node2)
+            links = self.net.linksBetween(n1, n2)
+            if not links:
+                return {
+                    "success": False,
+                    "action": "set_link_tc",
+                    "node1": node1,
+                    "node2": node2,
+                    "error": "link non trovato",
+                }
+
+            params = {}
+            if bw is not None:
+                params["bw"] = float(bw)
+            tc_delay = self._delay_to_tc(delay)
+            if tc_delay is not None:
+                params["delay"] = tc_delay
+
+            if not params:
+                return {
+                    "success": False,
+                    "action": "set_link_tc",
+                    "node1": node1,
+                    "node2": node2,
+                    "error": "nessun parametro TC valido (bw/delay)",
+                }
+
+            for link in links:
+                link.intf1.config(**params)
+                link.intf2.config(**params)
+
+            return {
+                "success": True,
+                "action": "set_link_tc",
+                "node1": node1,
+                "node2": node2,
+                "params": params,
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "action": "set_link_tc",
+                "node1": node1,
+                "node2": node2,
+                "error": str(e),
+            }
+
+    def add_link(self, node1: str, node2: str,
+                 bw: Optional[float] = None,
+                 delay: Optional[str] = None) -> dict:
+        if self.net is None:
+            return {
+                "success": False,
+                "action": "add_link",
+                "node1": node1,
+                "node2": node2,
+                "error": "Mininet net non collegata al controller",
+            }
+
+        try:
+            n1 = self.net.get(node1)
+            n2 = self.net.get(node2)
+
+            if self.net.linksBetween(n1, n2):
+                return {
+                    "success": False,
+                    "action": "add_link",
+                    "node1": node1,
+                    "node2": node2,
+                    "error": "link già esistente",
+                }
+
+            link_params = {}
+            if bw is not None:
+                link_params["bw"] = float(bw)
+            tc_delay = self._delay_to_tc(delay)
+            if tc_delay is not None:
+                link_params["delay"] = tc_delay
+
+            link = self.net.addLink(n1, n2, **link_params)
+            return {
+                "success": True,
+                "action": "add_link",
+                "node1": node1,
+                "node2": node2,
+                "intf1": getattr(link.intf1, "name", None),
+                "intf2": getattr(link.intf2, "name", None),
+                "params": link_params,
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "action": "add_link",
+                "node1": node1,
+                "node2": node2,
+                "error": str(e),
+            }
+
+    def remove_link(self, node1: str, node2: str) -> dict:
+        if self.net is None:
+            return {
+                "success": False,
+                "action": "remove_link",
+                "node1": node1,
+                "node2": node2,
+                "error": "Mininet net non collegata al controller",
+            }
+
+        try:
+            n1 = self.net.get(node1)
+            n2 = self.net.get(node2)
+            links = self.net.linksBetween(n1, n2)
+            if not links:
+                return {
+                    "success": False,
+                    "action": "remove_link",
+                    "node1": node1,
+                    "node2": node2,
+                    "error": "link non presente",
+                }
+
+            for link in links:
+                self.net.delLink(link)
+
+            return {
+                "success": True,
+                "action": "remove_link",
+                "node1": node1,
+                "node2": node2,
+                "removed": len(links),
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "action": "remove_link",
+                "node1": node1,
+                "node2": node2,
+                "error": str(e),
+            }
