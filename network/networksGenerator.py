@@ -89,9 +89,9 @@ class NetworksGenerator(Topo):
         # ── Persist ───────────────────────────────────────────────────────
         with open("topology.json", "w") as f:
             json.dump(self.topo_data, f, indent=4)
-        print("✅ topology.json generato con MAC, IP, porte e metadati link.")
+        print("✅ topology.json generated with MAC, IP, ports and link metadata.")
 
-    # ── QoS SETUP (chiamato dopo net.start()) ─────────────────────────────
+    # ── QoS SETUP (called after net.start()) ──────────────────────────────
 
     def setup_queues(self, net):
         """
@@ -102,13 +102,13 @@ class NetworksGenerator(Topo):
         Queue 1 → high-priority slice (min 8 Mbps)
         Queue 2 → low-priority  slice (min 2 Mbps)
         """
-        print("[📶] Configurazione QoS queue sugli switch...")
+        print("[📶] Configuring QoS queues on switches...")
         for sw in net.switches:
             for intf in sw.intfNames():
                 if intf == "lo":
                     continue
                 self._configure_port_queues(intf)
-        print("[✅] QoS queue configurate.")
+        print("[✅] QoS queues configured.")
 
     def _configure_port_queues(self, intf: str):
         """Apply OVS QoS + queues to a single interface."""
@@ -132,14 +132,14 @@ class NetworksGenerator(Topo):
                 f"other-config:max-rate={SLICE_CONFIG[2]['max_rate']}",
             ], check=True, capture_output=True)
         except subprocess.CalledProcessError as e:
-            print(f"[⚠️] QoS setup fallito su {intf}: {e.stderr.decode()[:100]}")
+            print(f"[⚠️] QoS setup failed on {intf}: {e.stderr.decode()[:100]}")
 
     @staticmethod
     def cleanup_queues():
-        """Remove all OVS QoS configurations (chiamato in _stop_all)."""
-        print("[🧹] Pulizia QoS queue...")
+        """Remove all OVS QoS configurations (called in _stop_all)."""
+        print("[🧹] Cleaning up QoS queues...")
         subprocess.run(["ovs-vsctl", "--all", "destroy", "qos"],
                        capture_output=True)
         subprocess.run(["ovs-vsctl", "--all", "destroy", "queue"],
                        capture_output=True)
-        print("[✅] QoS queue rimosse.")
+        print("[✅] QoS queues removed.")

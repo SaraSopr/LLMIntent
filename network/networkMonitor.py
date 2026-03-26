@@ -75,7 +75,7 @@ class NetworkMonitor:
                 if curr > prev:
                     drops     = curr - prev
                     host_name = self._mac_to_host(mac)
-                    print(f"[🚫 ALERT] {host_name} ({mac}): {drops} nuovi drop")
+                    print(f"[🚫 ALERT] {host_name} ({mac}): {drops} new drops")
                     self._last_drop_counts[mac] = curr
         except Exception as e:
             print(f"[⚠️] _check_drops error: {e}")
@@ -113,7 +113,7 @@ class NetworkMonitor:
             fix = self.llm.ask_fix(network_state, result.get("details", ""))
             self._apply_fix(fix)
         else:
-            print("[🤖 LLM] Nessuna anomalia rilevata.")
+            print("[🤖 LLM] No anomaly detected.")
 
     def _build_anomaly_signals(self, network_state: dict, snapshot: dict) -> dict:
         events = snapshot.get("events", [])[:40]
@@ -136,7 +136,16 @@ class NetworkMonitor:
         udp_lat = [float(e.get("latency_ms", 0) or 0) for e in events if str(e.get("proto", "")).upper() == "UDP"]
 
         flows = network_state.get("flows", []) or []
-        blocked_drop_rules = sum(1 for f in flows if int(f.get("priority", 0) or 0) == 65535)
+
+        all_flows = self.ryu.get_flows(self.num_switches)
+        blocked_hosts = sorted({
+            self._mac_to_host(str(f.get("match", {}).get("eth_src", "")))
+            for f in all_flows
+            if int(f.get("priority", 0) or 0) == 65535
+            and str(f.get("match", {}).get("eth_src", "")).strip()
+        })
+        blocked_hosts = [h for h in blocked_hosts if h and h != "unknown"]
+        blocked_drop_rules = len(blocked_hosts)
 
         num_flows = int(network_state.get("num_flows", 0) or 0)
         flow_growth = num_flows - self._prev_num_flows
@@ -166,6 +175,7 @@ class NetworkMonitor:
             "num_flows": num_flows,
             "flow_growth": flow_growth,
             "blocked_drop_rules": blocked_drop_rules,
+            "blocked_hosts": blocked_hosts,
             "max_src_share": round(max_src_share, 4),
         }
 
@@ -182,14 +192,14 @@ class NetworkMonitor:
         max_src_share = float(signals.get("max_src_share", 0.0) or 0.0)
 
         if events >= 12 and drop_rate >= 0.20:
-            reasons.append(f"drop rate elevato ({drop_rate * 100:.1f}% su {events} eventi)")
+            reasons.append(f"high drop rate ({drop_rate * 100:.1f}% over {events} events)")
         if icmp_count >= 5 and icmp_avg >= 350.0:
-            reasons.append(f"latenza ICMP anomala ({icmp_avg:.1f} ms)")
+            reasons.append(f"abnormal ICMP latency ({icmp_avg:.1f} ms)")
         if events >= 12 and p95 >= 2500.0:
-            reasons.append(f"latenza p95 molto alta ({p95:.1f} ms)")
+            reasons.append(f"very high p95 latency ({p95:.1f} ms)")
         if flow_growth >= 60 and max_src_share >= 0.75:
             reasons.append(
-                f"spike flussi con sorgente dominante (Δflow={flow_growth}, src_share={max_src_share * 100:.1f}%)"
+                f"flow spike with dominant source (Δflow={flow_growth}, src_share={max_src_share * 100:.1f}%)"
             )
 
         if reasons:
@@ -212,7 +222,7 @@ class NetworkMonitor:
         if llm_anomaly:
             return {
                 "anomaly": True,
-                "details": llm_result.get("details", "anomalia rilevata da LLM"),
+                "details": llm_result.get("details", "anomaly detected by LLM"),
             }
 
         if heur_anomaly:
@@ -223,7 +233,7 @@ class NetworkMonitor:
 
         return {
             "anomaly": False,
-            "details": llm_result.get("details", "Nessuna anomalia"),
+            "details": llm_result.get("details", "No anomaly"),
         }
 
     @staticmethod
@@ -250,24 +260,29 @@ class NetworkMonitor:
         if action == "block_host" and host_ref:
             link = self._resolve_host_link(host_ref)
             if link:
+                if self._is_host_already_blocked(link):
+                    resolved_host = link.get("node1", host_ref)
+                    print(f"[🔧 FIX] {resolved_host} already blocked — skip")
+                    return {"success": True, "already_blocked": True}
+
                 self.ryu.install_drop_rule(
                     dpid=link.get("dpid"),
                     port=link.get("port"),
                     src_mac=link.get("mac"),
                 )
                 resolved_host = link.get("node1", host_ref)
-                print(f"[🔧 FIX] {resolved_host} bloccato (ref={host_ref}) — {reason}")
+                print(f"[🔧 FIX] {resolved_host} blocked (ref={host_ref}) — {reason}")
                 return {"success": True}
             else:
-                print(f"[⚠️] FIX: host ref '{host_ref}' non trovata in topology.json")
-                return {"success": False, "error": f"host ref '{host_ref}' non trovata in topology.json"}
+                print(f"[⚠️] FIX: host ref '{host_ref}' not found in topology.json")
+                return {"success": False, "error": f"host ref '{host_ref}' not found in topology.json"}
 
         elif action == "set_link_tc":
             node1 = self._normalize_switch_ref(params.get("node1"))
             node2 = self._normalize_switch_ref(params.get("node2"))
             if not node1 or not node2:
-                print("[⚠️] FIX set_link_tc: parametri mancanti (node1/node2)")
-                return {"success": False, "error": "parametri mancanti (node1/node2)"}
+                print("[⚠️] FIX set_link_tc: missing parameters (node1/node2)")
+                return {"success": False, "error": "missing parameters (node1/node2)"}
 
             result = self.ryu.set_link_tc(
                 node1=node1,
@@ -277,23 +292,23 @@ class NetworkMonitor:
             )
             if result.get("success"):
                 self._update_topology_link_tc(node1, node2, params.get("bw"), params.get("delay"))
-                print(f"[🔧 FIX] TC aggiornato su {node1}<->{node2} — {reason}")
+                print(f"[🔧 FIX] TC updated on {node1}<->{node2} — {reason}")
                 return {"success": True}
             else:
-                err = result.get("error", "errore sconosciuto")
-                print(f"[⚠️] FIX set_link_tc fallita: {err}")
+                err = result.get("error", "unknown error")
+                print(f"[⚠️] FIX set_link_tc failed: {err}")
                 return {"success": False, "error": err}
 
         elif action == "add_link":
             node1 = self._normalize_switch_ref(params.get("node1"))
             node2 = self._normalize_switch_ref(params.get("node2"))
             if not node1 or not node2:
-                print("[⚠️] FIX add_link: parametri mancanti (node1/node2)")
-                return {"success": False, "error": "parametri mancanti (node1/node2)"}
+                print("[⚠️] FIX add_link: missing parameters (node1/node2)")
+                return {"success": False, "error": "missing parameters (node1/node2)"}
 
             if not (str(node1).startswith("s") and str(node2).startswith("s")):
-                err = "add_link consentito solo tra switch (sX-sY)"
-                print(f"[⚠️] FIX add_link fallita: {err}")
+                err = "add_link only allowed between switches (sX-sY)"
+                print(f"[⚠️] FIX add_link failed: {err}")
                 return {"success": False, "error": err}
 
             result = self.ryu.add_link(
@@ -304,42 +319,42 @@ class NetworkMonitor:
             )
             if result.get("success"):
                 self._add_topology_link(node1, node2, params.get("bw"), params.get("delay"))
-                print(f"[🔧 FIX] Link aggiunto {node1}<->{node2} — {reason}")
+                print(f"[🔧 FIX] Link added {node1}<->{node2} — {reason}")
                 return {"success": True}
             else:
-                err = result.get("error", "errore sconosciuto")
-                print(f"[⚠️] FIX add_link fallita: {err}")
+                err = result.get("error", "unknown error")
+                print(f"[⚠️] FIX add_link failed: {err}")
                 return {"success": False, "error": err}
 
         elif action == "remove_link":
             node1 = self._normalize_switch_ref(params.get("node1"))
             node2 = self._normalize_switch_ref(params.get("node2"))
             if not node1 or not node2:
-                print("[⚠️] FIX remove_link: parametri mancanti (node1/node2)")
-                return {"success": False, "error": "parametri mancanti (node1/node2)"}
+                print("[⚠️] FIX remove_link: missing parameters (node1/node2)")
+                return {"success": False, "error": "missing parameters (node1/node2)"}
 
             if not (str(node1).startswith("s") and str(node2).startswith("s")):
-                err = "remove_link consentito solo tra switch (sX-sY)"
-                print(f"[⚠️] FIX remove_link fallita: {err}")
+                err = "remove_link only allowed between switches (sX-sY)"
+                print(f"[⚠️] FIX remove_link failed: {err}")
                 return {"success": False, "error": err}
 
             result = self.ryu.remove_link(node1=node1, node2=node2)
             if result.get("success"):
                 self._remove_topology_link(node1, node2)
-                print(f"[🔧 FIX] Link rimosso {node1}<->{node2} — {reason}")
+                print(f"[🔧 FIX] Link removed {node1}<->{node2} — {reason}")
                 return {"success": True}
             else:
-                err = result.get("error", "errore sconosciuto")
-                print(f"[⚠️] FIX remove_link fallita: {err}")
+                err = result.get("error", "unknown error")
+                print(f"[⚠️] FIX remove_link failed: {err}")
                 return {"success": False, "error": err}
 
         elif action == "none":
-            print(f"[🔧 FIX] Nessuna azione necessaria — {reason}")
+            print(f"[🔧 FIX] No action required — {reason}")
             return {"success": True}
 
         else:
-            print(f"[⚠️] FIX: azione sconosciuta '{action}'")
-            return {"success": False, "error": f"azione sconosciuta '{action}'"}
+            print(f"[⚠️] FIX: unknown action '{action}'")
+            return {"success": False, "error": f"unknown action '{action}'"}
 
     # ── HELPERS ───────────────────────────────────────────────────────────────
 
@@ -362,6 +377,23 @@ class NetworkMonitor:
             if ref in {node1, node2, mac, ip}:
                 return link
         return None
+
+    def _is_host_already_blocked(self, link: dict) -> bool:
+        """Check if a priority-65535 drop rule already exists for this host MAC."""
+        try:
+            mac = str(link.get("mac", "")).strip().lower()
+            if not mac:
+                return False
+            flows = self.ryu.get_flows(self.num_switches)
+            for flow in flows:
+                if int(flow.get("priority", 0) or 0) != 65535:
+                    continue
+                match = flow.get("match", {}) if isinstance(flow.get("match"), dict) else {}
+                if str(match.get("eth_src", "")).strip().lower() == mac:
+                    return True
+            return False
+        except Exception:
+            return False
 
     def _load_topology(self) -> dict:
         try:
@@ -413,7 +445,11 @@ class NetworkMonitor:
                 "request_id": request_id,
                 "ts": datetime.utcnow().isoformat(timespec="milliseconds") + "Z",
                 "source": payload.get("source", "gui"),
+                "requested_ts": payload.get("ts"),
                 "action": payload.get("action"),
+                "host": payload.get("host"),
+                "params": payload.get("params", {}),
+                "reason": payload.get("reason"),
                 "success": False,
             }
 
@@ -446,7 +482,7 @@ class NetworkMonitor:
             with open(TOPOLOGY_FILE, "w") as f:
                 json.dump(self._topo_map, f, indent=4)
         except Exception as e:
-            print(f"[⚠️] Persist topology fallita: {e}")
+            print(f"[⚠️] Topology persist failed: {e}")
 
     @staticmethod
     def _same_link(a1: str, a2: str, b1: str, b2: str) -> bool:

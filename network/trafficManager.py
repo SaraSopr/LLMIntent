@@ -92,7 +92,7 @@ class TrafficManager:
                 queue_id=slice_id,
             )
         else:
-            print(f"[⚠️] Mappa host incompleta per {h_src.name}->{h_dst.name}, flow non installato via northbound")
+            print(f"[⚠️] Incomplete host map for {h_src.name}->{h_dst.name}, flow not installed via northbound")
 
         # 3. Verify traffic and record
         t0       = time.time()

@@ -545,7 +545,7 @@ class LLMClient:
 
     def _call_openai(self, prompt: str, query_kind: str) -> str:
         if not self.client:
-            print("[⚠️] OPENAI_API_KEY non configurata. Imposta la variabile in .env")
+            print("[⚠️] OPENAI_API_KEY not configured. Set the variable in .env")
             self._append_model_call_log({
                 "query_kind": query_kind,
                 "status": "no_client",
@@ -619,7 +619,7 @@ class LLMClient:
                 is_rate_limited = "rate_limit" in msg.lower() or "429" in msg
                 if is_rate_limited and attempt < max_attempts:
                     wait_s = self._extract_retry_seconds(msg)
-                    print(f"[⏳] OpenAI rate limit, retry tra {wait_s:.2f}s...")
+                    print(f"[⏳] OpenAI rate limit, retrying in {wait_s:.2f}s...")
                     self._append_model_call_log({
                         "query_kind": query_kind,
                         "status": "rate_limit_retry",
@@ -801,7 +801,7 @@ class LLMClient:
                     return json.loads(raw[start:end])
                 except json.JSONDecodeError:
                     pass
-        print(f"[⚠️] LLM response non parsabile: {raw[:200]}")
+        print(f"[⚠️] LLM response not parseable: {raw[:200]}")
         return {"slice": 2, "anomaly": False, "reason": "Parse error"}
 
     def _log(self, call_type: str, prompt_summary: str, response: dict):

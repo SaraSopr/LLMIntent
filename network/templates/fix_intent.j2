@@ -11,6 +11,7 @@ Available actions:
 Conservative policy:
 - Prefer 'none' unless there is clear and actionable evidence.
 - Do NOT use aggressive actions without concrete signal support.
+- If `anomaly_signals.blocked_hosts` contains a host, do NOT propose blocking that same host again.
 
 Action rules:
 - block_host: use when one host is clearly harmful.

@@ -1,198 +1,318 @@
 {
     "running": false,
-    "uptime_s": 62.5,
+    "uptime_s": 112.0,
     "events": [
         {
-            "ts": 60.31,
+            "ts": 110.86,
             "src": "h3",
-            "dst": "h2",
-            "proto": "ICMP",
-            "accepted": true,
-            "latency_ms": 82.19,
-            "slice": 2,
-            "reason": "Slice 1 is highly loaded with 1319 packets and 7 flows plus RF queue pressure; slice 2 is less loaded with 688 packets, 3 flows, and RF queues with lower pressure, so choose slice 2 despite ICMP preference to reduce congestion."
-        },
-        {
-            "ts": 56.89,
-            "src": "h2",
-            "dst": "h3",
-            "proto": "ICMP",
-            "accepted": true,
-            "latency_ms": 72.89,
-            "slice": 2,
-            "reason": "Slice 1 is heavily congested with 1319 packets and 7 flows; slice 2 has fewer flows (3) but moderate packets (686) and less RF queue pressure, so choose slice 2 despite ICMP protocol to reduce congestion."
-        },
-        {
-            "ts": 54.27,
-            "src": "h4",
-            "dst": "h2",
-            "proto": "TCP",
-            "accepted": true,
-            "latency_ms": 1440.2,
-            "slice": 2,
-            "reason": "Slice 1 is heavily loaded with 1319 packets and 7 flows and has RF queue; slice 2 is lightly loaded with 40 packets and 3 flows, so select slice 2 to minimize congestion and TCP protocol supports slice 2."
-        },
-        {
-            "ts": 50.1,
-            "src": "h4",
-            "dst": "h2",
-            "proto": "ICMP",
-            "accepted": true,
-            "latency_ms": 51.71,
-            "slice": 2,
-            "reason": "Slice 1 has very high packet load (1319) and more flows (7) with RF queues indicating congestion. Slice 2 is less loaded with 39 packets and 3 flows, so choose slice 2 despite ICMP protocol to minimize congestion."
-        },
-        {
-            "ts": 46.85,
-            "src": "h4",
-            "dst": "h2",
+            "dst": "h1",
             "proto": "UDP",
             "accepted": true,
-            "latency_ms": 1503.88,
-            "slice": 2,
-            "reason": "Slice 1 has much higher packet load (1321) and more flows (8) with RF queue, indicating congestion. Slice 2 has low packet and flow count, so select slice 2 to reduce congestion and suit UDP protocol."
-        },
-        {
-            "ts": 42.76,
-            "src": "h2",
-            "dst": "h3",
-            "proto": "UDP",
-            "accepted": true,
-            "latency_ms": 1507.15,
-            "slice": 2,
-            "reason": "Slice 1 has very high packet load (1321) and flows (8) with RF queue present, indicating congestion. Slice 2 is lightly loaded (14 packets, 2 flows), so select slice 2 to reduce congestion and UDP protocol supports slice 2."
-        },
-        {
-            "ts": 38.24,
-            "src": "h5",
-            "dst": "h2",
-            "proto": "ICMP",
-            "accepted": true,
-            "latency_ms": 54.93,
+            "latency_ms": 1559.57,
             "slice": 1,
-            "reason": "Slice 2 shows much higher packet load (1308) with large RF queue; slice 1 has low packet and flow counts, so choose slice 1 to minimize congestion and latency."
+            "reason": "Slice 2 maintains higher packet count and flows, indicating higher load; slice 1 remains less loaded; no drops reported; protocol tie-breaker not used due to clear load difference."
         },
         {
-            "ts": 35.52,
-            "src": "h5",
-            "dst": "h2",
-            "proto": "TCP",
+            "ts": 104.91,
+            "src": "h4",
+            "dst": "h1",
+            "proto": "UDP",
             "accepted": true,
-            "latency_ms": 1399.52,
-            "slice": 2,
-            "reason": "Slice 2 has fewer flows (4) but comparable packets (30) versus slice 1 (6 flows, 25 packets). RF queue usage on slice 1 is higher, indicating more pressure. TCP protocol supports choosing slice 2 as tie-breaker."
+            "latency_ms": 1464.51,
+            "slice": 1,
+            "reason": "Slice 2 shows significantly higher packets and flows, indicating higher load; slice 1 is less loaded; no drops; UDP protocol tie-breaker not applied due to clear load imbalance."
         },
         {
-            "ts": 31.72,
+            "ts": 101.31,
+            "src": "h2",
+            "dst": "h3",
+            "proto": "ICMP",
+            "accepted": true,
+            "latency_ms": 49.44,
+            "slice": 2,
+            "reason": "Slice 2 has significantly lower flows and packets than slice 1 despite a slight queue increase; no drops; protocol tie-breaker not needed due to load imbalance."
+        },
+        {
+            "ts": 99.23,
             "src": "h2",
             "dst": "h5",
             "proto": "ICMP",
             "accepted": true,
-            "latency_ms": 61.02,
+            "latency_ms": 67.86,
             "slice": 2,
-            "reason": "Slice 1 has slightly higher flows and almost equal packets compared to slice 2, but RF shows queue on slice 1; slice 2 is less loaded overall. ICMP tie-break favors slice 1 but pressure bias directs to slice 2."
+            "reason": "Slice 2 shows significantly less pressure with fewer flows and packets compared to slice 1; ICMP protocol tie-breaker less relevant due to clear load imbalance; no drops detected."
         },
         {
-            "ts": 29.03,
+            "ts": 97.29,
+            "src": "h5",
+            "dst": "h3",
+            "proto": "TCP",
+            "accepted": true,
+            "latency_ms": 1336.9,
+            "slice": 2,
+            "reason": "Slice 2 has more flows and packets but within 20% difference; TCP protocol prefers slice 2 as tie-breaker; no host drops reported to affect the decision."
+        },
+        {
+            "ts": 94.0,
             "src": "h2",
+            "dst": "h3",
+            "proto": "ICMP",
+            "accepted": true,
+            "latency_ms": 64.01,
+            "slice": 2,
+            "reason": "Current state shows slice 1 has increased packets (2351) and flows (9) compared to slice 2 (2074 packets, 4 flows). Slice 2 is less loaded based on updated state. No drops detected. ICMP protocol prefers slice 1 only as tie-breaker; given load imbalance, slice 2 is chosen to reduce congestion."
+        },
+        {
+            "ts": 91.54,
+            "src": "h4",
+            "dst": "h2",
+            "proto": "TCP",
+            "accepted": true,
+            "latency_ms": 1641.64,
+            "slice": 1,
+            "reason": "Slice 2 remains more loaded with 2734 packets and 5 flows vs 1807 packets and 9 flows on slice 1. No drops reported. Recent queue addition shows low queue for slice 1. Despite TCP protocol favoring slice 2, to reduce congestion slice 1 is preferred."
+        },
+        {
+            "ts": 87.02,
+            "src": "h2",
+            "dst": "h5",
+            "proto": "UDP",
+            "accepted": true,
+            "latency_ms": 1475.05,
+            "slice": 1,
+            "reason": "Slice 2 has increased packets (2739) and flows (6) compared to slice 1 (1795 packets, 8 flows) indicating higher load on slice 2. New queue entries also show slice 2 with queue 2 load. No drops reported. To minimize congestion, slice 1 is preferred despite UDP protocol favoring slice 2."
+        },
+        {
+            "ts": 82.86,
+            "src": "h3",
+            "dst": "h4",
+            "proto": "ICMP",
+            "accepted": true,
+            "latency_ms": 82.88,
+            "slice": 1,
+            "reason": "Slice 1 has fewer packets (1805) and flows (9) compared to slice 2 (2079 packets, 5 flows), but the flow queue usage shows slice 1 queues (q1) with lower total q (1+0=1) compared to slice 2 queues (q2) with total q (2+1=3), indicating slice 1 is less loaded. ICMP protocol prefers slice 1 as tie-breaker. No indication of drops or host pressure against slice 1, so slice 1 selected to minimize latency and congestion."
+        },
+        {
+            "ts": 79.64,
+            "src": "h5",
+            "dst": "h3",
+            "proto": "UDP",
+            "accepted": true,
+            "latency_ms": 1513.44,
+            "slice": 2,
+            "reason": "Slice 2 flow count is 5 with 2043 packets compared to slice 1's 9 flows and 1578 packets; slice 2 has higher packet load, but flow count difference and protocol UDP preference justify assignment to slice 2."
+        },
+        {
+            "ts": 75.62,
+            "src": "h2",
+            "dst": "h1",
+            "proto": "TCP",
+            "accepted": true,
+            "latency_ms": 1605.39,
+            "slice": 1,
+            "reason": "Slice 2 load with 6 flows and 2728 packets is significantly higher than slice 1 with 8 flows and 1029 packets (over 20% more packets). Assign to less loaded slice 1 to reduce congestion despite TCP preference for slice 2."
+        },
+        {
+            "ts": 70.31,
+            "src": "h5",
+            "dst": "h1",
+            "proto": "UDP",
+            "accepted": true,
+            "latency_ms": 1535.53,
+            "slice": 2,
+            "reason": "Slice 1 load increased to 10 flows with 2409 packets, slice 2 remains at 4 flows and 1337 packets. Slice 2 is less loaded and UDP traffic prefers slice 2, so assign flow to slice 2 to balance load and optimize throughput."
+        },
+        {
+            "ts": 66.29,
+            "src": "h4",
+            "dst": "h5",
+            "proto": "ICMP",
+            "accepted": true,
+            "latency_ms": 224.61,
+            "slice": 1,
+            "reason": "Slice 1 has stable load with 8 flows and 2406 packets, slice 2 has 4 flows and 1337 packets, load difference less than 20%. ICMP traffic prefers slice 1, which offers lower latency, making it the better choice given similar load pressure."
+        },
+        {
+            "ts": 63.68,
+            "src": "h2",
+            "dst": "h3",
+            "proto": "UDP",
+            "accepted": true,
+            "latency_ms": 1453.52,
+            "slice": 2,
+            "reason": "Slice 1 load decreased slightly but slice 2 load increased to 4 flows and 1327 packets, showing slice 2 is less loaded proportionally. UDP protocol preference combined with slightly lower pressure on slice 2 justifies assignment to slice 2."
+        },
+        {
+            "ts": 59.78,
+            "src": "h3",
+            "dst": "h2",
+            "proto": "UDP",
+            "accepted": true,
+            "latency_ms": 1505.69,
+            "slice": 2,
+            "reason": "Slice 2 shows increasing load with 3 flows and 1322 packets vs slice 1's 9 flows and 2408 packets; packet load difference is less than 20%. UDP traffic prefers slice 2 as tie-breaker for throughput. No drops detected, assign slice 2 to balance load and match traffic type."
+        },
+        {
+            "ts": 56.04,
+            "src": "h4",
             "dst": "h1",
             "proto": "ICMP",
             "accepted": true,
-            "latency_ms": 76.06,
+            "latency_ms": 59.48,
             "slice": 1,
-            "reason": "Slice 2 has significantly higher packet load (40) and more flows (6) compared to slice 1 (8 packets, 4 flows), so slice 1 is less loaded. ICMP protocol also prefers slice 1."
+            "reason": "Slice 2 load increased significantly to 1022 packets and 3 flows, slice 1 remains at 9 flows and 2405 packets. Pressure difference less than 20%, so use ICMP preference for latency-sensitive traffic, assigning slice 1 to minimize latency."
         },
         {
-            "ts": 26.45,
+            "ts": 53.14,
+            "src": "h5",
+            "dst": "h3",
+            "proto": "TCP",
+            "accepted": true,
+            "latency_ms": 1382.51,
+            "slice": 2,
+            "reason": "Slice 1 remains heavily loaded with 9 flows and 2405 packets, while slice 2 is lightly loaded with 3 flows and 30 packets. Recent flow addition uses queue 1 but no increase in drops. Given TCP flow and significantly lower pressure on slice 2, assign slice 2 to balance load and minimize congestion."
+        },
+        {
+            "ts": 48.62,
             "src": "h2",
+            "dst": "h3",
+            "proto": "ICMP",
+            "accepted": true,
+            "latency_ms": 96.75,
+            "slice": 1,
+            "reason": "Slice 1 has significantly higher packet and flow counts but no drops, indicating stable handling of current load. Both queues show some activity, but slice 2 load is much lower. ICMP traffic preference and latency-sensitive path favor slice 1, minimizing latency without congestion risk."
+        },
+        {
+            "ts": 46.33,
+            "src": "h1",
             "dst": "h5",
             "proto": "UDP",
             "accepted": true,
-            "latency_ms": 1467.6,
-            "slice": 2,
-            "reason": "Slice 2 has fewer flows and higher packets but less relative load than slice 1; UDP protocol favors slice 2 as tie-breaker."
-        },
-        {
-            "ts": 22.79,
-            "src": "h4",
-            "dst": "h2",
-            "proto": "ICMP",
-            "accepted": true,
-            "latency_ms": 108.09,
+            "latency_ms": 1562.79,
             "slice": 1,
-            "reason": "Slice 2 has 26 packets and 4 flows vs. slice 1's 8 packets and 4 flows, so slice 1 is less loaded. ICMP protocol also prefers slice 1."
+            "reason": "Slice 2 has higher packet pressure (1214 packets) than slice 1 (1024 packets) but difference (~18%) is less than 20%; choose slice 1 as less loaded slice."
         },
         {
-            "ts": 20.47,
-            "src": "h1",
-            "dst": "h2",
+            "ts": 41.6,
+            "src": "h5",
+            "dst": "h1",
+            "proto": "TCP",
+            "accepted": true,
+            "latency_ms": 1673.18,
+            "slice": 2,
+            "reason": "Slice 1 has significantly higher flow and packet pressure (6 flows, 1024 packets) than slice 2 (4 flows, 43 packets); choose less loaded slice 2 consistent with TCP protocol preference."
+        },
+        {
+            "ts": 37.61,
+            "src": "h3",
+            "dst": "h5",
             "proto": "UDP",
             "accepted": true,
-            "latency_ms": 1495.39,
+            "latency_ms": 1462.39,
             "slice": 2,
-            "reason": "Slice 1 has more flows and packets (4 flows, 6 packets) versus slice 2 (2 flows, 14 packets), but considering the packet load, slice 1 has less packet pressure; however, slice 2 is less loaded in flows and suits UDP protocol tie-break."
+            "reason": "Slice 1 shows significantly higher flow and packet pressure (6 flows, 892 packets) than slice 2 (4 flows, 32 packets); select less loaded slice 2 despite UDP protocol preference."
         },
         {
-            "ts": 16.49,
+            "ts": 33.01,
             "src": "h4",
-            "dst": "h5",
-            "proto": "ICMP",
+            "dst": "h1",
+            "proto": "TCP",
             "accepted": true,
-            "latency_ms": 146.43,
+            "latency_ms": 1551.1,
             "slice": 1,
-            "reason": "Slice 1 has fewer packets (3) and only slightly fewer flows (2) than slice 2 (12 packets, 2 flows), making slice 1 less pressured. ICMP protocol favors slice 1 as tie-breaker."
+            "reason": "Flow and packet pressure closer but slice 2 has higher packets (32 vs 17); prefer less loaded slice 1 despite TCP protocol favoring slice 2."
         },
         {
-            "ts": 14.0,
+            "ts": 29.44,
             "src": "h1",
+            "dst": "h3",
+            "proto": "ICMP",
+            "accepted": true,
+            "latency_ms": 133.58,
+            "slice": 1,
+            "reason": "Slice 2 shows higher flow and packet pressure (4 flows, 30 packets) than slice 1 (2 flows, 14 packets); avoiding more loaded slice 2 despite ICMP protocol favoring slice 1."
+        },
+        {
+            "ts": 26.14,
+            "src": "h2",
             "dst": "h5",
             "proto": "ICMP",
             "accepted": true,
-            "latency_ms": 85.95,
-            "slice": 1,
-            "reason": "Slice 2 has 2 flows and 12 packets, with recent queue usage on slice 2; slice 1 is less loaded. ICMP protocol also prefers slice 1 as tie-breaker."
+            "latency_ms": 53.52,
+            "slice": 2,
+            "reason": "Slice 1 has higher flow and packet pressure (4 flows, 30 packets) compared to slice 2 (2 flows, 12 packets); choose less loaded slice 2 despite ICMP protocol preference."
         },
         {
-            "ts": 11.16,
+            "ts": 23.91,
+            "src": "h3",
+            "dst": "h5",
+            "proto": "UDP",
+            "accepted": true,
+            "latency_ms": 1532.96,
+            "slice": 2,
+            "reason": "Slice 1 has higher flow and packet pressure (4 flows, 28 packets) while slice 2 has none; choose less loaded slice 2 despite UDP protocol preference."
+        },
+        {
+            "ts": 19.77,
             "src": "h2",
+            "dst": "h5",
+            "proto": "ICMP",
+            "accepted": true,
+            "latency_ms": 68.18,
+            "slice": 1,
+            "reason": "Pressure balanced between slices (both 2 flows, 12 packets); protocol ICMP prefers slice 1 as tie-breaker."
+        },
+        {
+            "ts": 17.7,
+            "src": "h4",
             "dst": "h3",
             "proto": "UDP",
             "accepted": true,
-            "latency_ms": 1456.43,
+            "latency_ms": 1543.93,
+            "slice": 1,
+            "reason": "Slice 2 has flow and packet pressure (2 flows, 12 packets) while slice 1 has none; avoiding more loaded slice 2 despite UDP protocol preference."
+        },
+        {
+            "ts": 13.47,
+            "src": "h5",
+            "dst": "h2",
+            "proto": "UDP",
+            "accepted": true,
+            "latency_ms": 1448.42,
             "slice": 2,
-            "reason": "Both slices have zero flows and packets, so pressure is equal. UDP protocol prefers slice 2 as a tie-breaker."
+            "reason": "Both q1_packets and q2_packets are zero with no current pressure on either slice; protocol is UDP which prefers slice 2 as tie-breaker."
         }
     ],
     "node_stats": {
-        "h2": {
+        "h5": {
             "tx": 6,
             "rx": 8,
             "drops": 0,
             "packets": 14
         },
-        "h3": {
-            "tx": 1,
+        "h2": {
+            "tx": 9,
             "rx": 3,
             "drops": 0,
-            "packets": 4
+            "packets": 12
+        },
+        "h4": {
+            "tx": 6,
+            "rx": 1,
+            "drops": 0,
+            "packets": 7
+        },
+        "h3": {
+            "tx": 5,
+            "rx": 9,
+            "drops": 0,
+            "packets": 14
         },
         "h1": {
             "tx": 2,
-            "rx": 1,
+            "rx": 7,
             "drops": 0,
-            "packets": 3
-        },
-        "h5": {
-            "tx": 2,
-            "rx": 4,
-            "drops": 0,
-            "packets": 6
-        },
-        "h4": {
-            "tx": 5,
-            "rx": 0,
-            "drops": 0,
-            "packets": 5
+            "packets": 9
         }
     },
     "flow_table": [
@@ -201,19 +321,41 @@
             "cookie": 0,
             "idle_timeout": 0,
             "hard_timeout": 0,
-            "byte_count": 3346,
-            "duration_sec": 0,
-            "duration_nsec": 671000000,
-            "packet_count": 7,
+            "byte_count": 15302,
+            "duration_sec": 2,
+            "duration_nsec": 474000000,
+            "packet_count": 13,
             "length": 104,
             "flags": 0,
             "actions": [
-                "SET_QUEUE:2",
-                "OUTPUT:3"
+                "SET_QUEUE:1",
+                "OUTPUT:2"
             ],
             "match": {
                 "dl_src": "00:00:00:00:00:03",
-                "dl_dst": "00:00:00:00:00:02"
+                "dl_dst": "00:00:00:00:00:01"
+            },
+            "table_id": 0,
+            "dpid": 1
+        },
+        {
+            "priority": 100,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 1652,
+            "duration_sec": 2,
+            "duration_nsec": 473000000,
+            "packet_count": 3,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "SET_QUEUE:1",
+                "OUTPUT:3"
+            ],
+            "match": {
+                "dl_src": "00:00:00:00:00:01",
+                "dl_dst": "00:00:00:00:00:03"
             },
             "table_id": 0,
             "dpid": 2
@@ -223,15 +365,59 @@
             "cookie": 0,
             "idle_timeout": 0,
             "hard_timeout": 0,
-            "byte_count": 30520,
-            "duration_sec": 0,
-            "duration_nsec": 661000000,
-            "packet_count": 24,
+            "byte_count": 1490762,
+            "duration_sec": 8,
+            "duration_nsec": 330000000,
+            "packet_count": 523,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "SET_QUEUE:1",
+                "OUTPUT:2"
+            ],
+            "match": {
+                "dl_src": "00:00:00:00:00:04",
+                "dl_dst": "00:00:00:00:00:01"
+            },
+            "table_id": 0,
+            "dpid": 1
+        },
+        {
+            "priority": 100,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 34348,
+            "duration_sec": 8,
+            "duration_nsec": 324000000,
+            "packet_count": 499,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "SET_QUEUE:1",
+                "OUTPUT:3"
+            ],
+            "match": {
+                "dl_src": "00:00:00:00:00:01",
+                "dl_dst": "00:00:00:00:00:04"
+            },
+            "table_id": 0,
+            "dpid": 1
+        },
+        {
+            "priority": 100,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 17052,
+            "duration_sec": 10,
+            "duration_nsec": 517000000,
+            "packet_count": 17,
             "length": 104,
             "flags": 0,
             "actions": [
                 "SET_QUEUE:2",
-                "OUTPUT:4"
+                "OUTPUT:3"
             ],
             "match": {
                 "dl_src": "00:00:00:00:00:02",
@@ -245,32 +431,10 @@
             "cookie": 0,
             "idle_timeout": 0,
             "hard_timeout": 0,
-            "byte_count": 1893010,
-            "duration_sec": 7,
-            "duration_nsec": 967000000,
-            "packet_count": 659,
-            "length": 104,
-            "flags": 0,
-            "actions": [
-                "SET_QUEUE:2",
-                "OUTPUT:3"
-            ],
-            "match": {
-                "dl_src": "00:00:00:00:00:04",
-                "dl_dst": "00:00:00:00:00:02"
-            },
-            "table_id": 0,
-            "dpid": 2
-        },
-        {
-            "priority": 100,
-            "cookie": 0,
-            "idle_timeout": 0,
-            "hard_timeout": 0,
-            "byte_count": 43116,
-            "duration_sec": 7,
-            "duration_nsec": 973000000,
-            "packet_count": 631,
+            "byte_count": 17094,
+            "duration_sec": 10,
+            "duration_nsec": 519000000,
+            "packet_count": 18,
             "length": 104,
             "flags": 0,
             "actions": [
@@ -278,8 +442,8 @@
                 "OUTPUT:2"
             ],
             "match": {
-                "dl_src": "00:00:00:00:00:02",
-                "dl_dst": "00:00:00:00:00:04"
+                "dl_src": "00:00:00:00:00:03",
+                "dl_dst": "00:00:00:00:00:02"
             },
             "table_id": 0,
             "dpid": 3
@@ -289,127 +453,17 @@
             "cookie": 0,
             "idle_timeout": 0,
             "hard_timeout": 0,
-            "byte_count": 56880,
-            "duration_sec": 22,
-            "duration_nsec": 603000000,
-            "packet_count": 642,
-            "length": 104,
-            "flags": 0,
-            "actions": [
-                "SET_QUEUE:1",
-                "OUTPUT:3"
-            ],
-            "match": {
-                "dl_src": "00:00:00:00:00:02",
-                "dl_dst": "00:00:00:00:00:05"
-            },
-            "table_id": 0,
-            "dpid": 1
-        },
-        {
-            "priority": 100,
-            "cookie": 0,
-            "idle_timeout": 0,
-            "hard_timeout": 0,
-            "byte_count": 1879642,
-            "duration_sec": 22,
+            "byte_count": 17094,
+            "duration_sec": 12,
             "duration_nsec": 618000000,
-            "packet_count": 654,
+            "packet_count": 18,
             "length": 104,
             "flags": 0,
             "actions": [
-                "SET_QUEUE:1",
-                "OUTPUT:3"
+                "SET_QUEUE:2",
+                "OUTPUT:4"
             ],
             "match": {
-                "dl_src": "00:00:00:00:00:05",
-                "dl_dst": "00:00:00:00:00:02"
-            },
-            "table_id": 0,
-            "dpid": 2
-        },
-        {
-            "priority": 100,
-            "cookie": 0,
-            "idle_timeout": 0,
-            "hard_timeout": 0,
-            "byte_count": 1694,
-            "duration_sec": 31,
-            "duration_nsec": 832000000,
-            "packet_count": 4,
-            "length": 104,
-            "flags": 0,
-            "actions": [
-                "SET_QUEUE:1",
-                "OUTPUT:2"
-            ],
-            "match": {
-                "dl_src": "00:00:00:00:00:02",
-                "dl_dst": "00:00:00:00:00:01"
-            },
-            "table_id": 0,
-            "dpid": 1
-        },
-        {
-            "priority": 100,
-            "cookie": 0,
-            "idle_timeout": 0,
-            "hard_timeout": 0,
-            "byte_count": 15260,
-            "duration_sec": 31,
-            "duration_nsec": 839000000,
-            "packet_count": 12,
-            "length": 104,
-            "flags": 0,
-            "actions": [
-                "SET_QUEUE:1",
-                "OUTPUT:3"
-            ],
-            "match": {
-                "dl_src": "00:00:00:00:00:01",
-                "dl_dst": "00:00:00:00:00:02"
-            },
-            "table_id": 0,
-            "dpid": 2
-        },
-        {
-            "priority": 1,
-            "cookie": 0,
-            "idle_timeout": 0,
-            "hard_timeout": 0,
-            "byte_count": 1879600,
-            "duration_sec": 35,
-            "duration_nsec": 486000000,
-            "packet_count": 653,
-            "length": 104,
-            "flags": 0,
-            "actions": [
-                "OUTPUT:1"
-            ],
-            "match": {
-                "in_port": 3,
-                "dl_src": "00:00:00:00:00:05",
-                "dl_dst": "00:00:00:00:00:02"
-            },
-            "table_id": 0,
-            "dpid": 1
-        },
-        {
-            "priority": 1,
-            "cookie": 0,
-            "idle_timeout": 0,
-            "hard_timeout": 0,
-            "byte_count": 55368,
-            "duration_sec": 35,
-            "duration_nsec": 464000000,
-            "packet_count": 641,
-            "length": 104,
-            "flags": 0,
-            "actions": [
-                "OUTPUT:1"
-            ],
-            "match": {
-                "in_port": 3,
                 "dl_src": "00:00:00:00:00:02",
                 "dl_dst": "00:00:00:00:00:05"
             },
@@ -417,89 +471,45 @@
             "dpid": 2
         },
         {
-            "priority": 1,
+            "priority": 100,
             "cookie": 0,
             "idle_timeout": 0,
             "hard_timeout": 0,
-            "byte_count": 43074,
-            "duration_sec": 38,
-            "duration_nsec": 78000000,
-            "packet_count": 630,
+            "byte_count": 17052,
+            "duration_sec": 12,
+            "duration_nsec": 620000000,
+            "packet_count": 17,
             "length": 104,
             "flags": 0,
             "actions": [
+                "SET_QUEUE:2",
                 "OUTPUT:2"
             ],
             "match": {
-                "in_port": 3,
-                "dl_src": "00:00:00:00:00:02",
-                "dl_dst": "00:00:00:00:00:04"
-            },
-            "table_id": 0,
-            "dpid": 2
-        },
-        {
-            "priority": 1,
-            "cookie": 0,
-            "idle_timeout": 0,
-            "hard_timeout": 0,
-            "byte_count": 1892912,
-            "duration_sec": 38,
-            "duration_nsec": 60000000,
-            "packet_count": 658,
-            "length": 104,
-            "flags": 0,
-            "actions": [
-                "OUTPUT:1"
-            ],
-            "match": {
-                "in_port": 2,
-                "dl_src": "00:00:00:00:00:04",
+                "dl_src": "00:00:00:00:00:05",
                 "dl_dst": "00:00:00:00:00:02"
             },
             "table_id": 0,
             "dpid": 3
         },
         {
-            "priority": 1,
+            "priority": 100,
             "cookie": 0,
             "idle_timeout": 0,
             "hard_timeout": 0,
-            "byte_count": 13748,
-            "duration_sec": 41,
-            "duration_nsec": 527000000,
-            "packet_count": 11,
+            "byte_count": 3774738,
+            "duration_sec": 15,
+            "duration_nsec": 829000000,
+            "packet_count": 1325,
             "length": 104,
             "flags": 0,
             "actions": [
-                "OUTPUT:1"
+                "SET_QUEUE:2",
+                "OUTPUT:3"
             ],
             "match": {
-                "in_port": 2,
-                "dl_src": "00:00:00:00:00:01",
-                "dl_dst": "00:00:00:00:00:02"
-            },
-            "table_id": 0,
-            "dpid": 1
-        },
-        {
-            "priority": 1,
-            "cookie": 0,
-            "idle_timeout": 0,
-            "hard_timeout": 0,
-            "byte_count": 1652,
-            "duration_sec": 41,
-            "duration_nsec": 567000000,
-            "packet_count": 3,
-            "length": 104,
-            "flags": 0,
-            "actions": [
-                "OUTPUT:1"
-            ],
-            "match": {
-                "in_port": 3,
-                "dl_src": "00:00:00:00:00:02",
-                "dl_dst": "00:00:00:00:00:01"
+                "dl_src": "00:00:00:00:00:05",
+                "dl_dst": "00:00:00:00:00:03"
             },
             "table_id": 0,
             "dpid": 2
@@ -509,10 +519,32 @@
             "cookie": 0,
             "idle_timeout": 0,
             "hard_timeout": 0,
-            "byte_count": 140,
-            "duration_sec": 44,
-            "duration_nsec": 440000000,
-            "packet_count": 2,
+            "byte_count": 115912,
+            "duration_sec": 15,
+            "duration_nsec": 826000000,
+            "packet_count": 1297,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "SET_QUEUE:2",
+                "OUTPUT:4"
+            ],
+            "match": {
+                "dl_src": "00:00:00:00:00:03",
+                "dl_dst": "00:00:00:00:00:05"
+            },
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 100,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 49130,
+            "duration_sec": 21,
+            "duration_nsec": 869000000,
+            "packet_count": 745,
             "length": 104,
             "flags": 0,
             "actions": [
@@ -520,29 +552,7 @@
                 "OUTPUT:3"
             ],
             "match": {
-                "dl_src": "00:00:00:00:00:04",
-                "dl_dst": "00:00:00:00:00:05"
-            },
-            "table_id": 0,
-            "dpid": 1
-        },
-        {
-            "priority": 1,
-            "cookie": 0,
-            "idle_timeout": 0,
-            "hard_timeout": 0,
-            "byte_count": 140,
-            "duration_sec": 44,
-            "duration_nsec": 397000000,
-            "packet_count": 2,
-            "length": 104,
-            "flags": 0,
-            "actions": [
-                "OUTPUT:1"
-            ],
-            "match": {
-                "in_port": 3,
-                "dl_src": "00:00:00:00:00:05",
+                "dl_src": "00:00:00:00:00:02",
                 "dl_dst": "00:00:00:00:00:04"
             },
             "table_id": 0,
@@ -553,10 +563,54 @@
             "cookie": 0,
             "idle_timeout": 0,
             "hard_timeout": 0,
-            "byte_count": 140,
-            "duration_sec": 44,
-            "duration_nsec": 405000000,
-            "packet_count": 2,
+            "byte_count": 2278558,
+            "duration_sec": 21,
+            "duration_nsec": 566000000,
+            "packet_count": 763,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:1"
+            ],
+            "match": {
+                "in_port": 3,
+                "dl_src": "00:00:00:00:00:04",
+                "dl_dst": "00:00:00:00:00:02"
+            },
+            "table_id": 0,
+            "dpid": 1
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 49088,
+            "duration_sec": 21,
+            "duration_nsec": 616000000,
+            "packet_count": 744,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:1"
+            ],
+            "match": {
+                "in_port": 2,
+                "dl_src": "00:00:00:00:00:02",
+                "dl_dst": "00:00:00:00:00:04"
+            },
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 2278558,
+            "duration_sec": 21,
+            "duration_nsec": 564000000,
+            "packet_count": 763,
             "length": 104,
             "flags": 0,
             "actions": [
@@ -564,30 +618,8 @@
             ],
             "match": {
                 "in_port": 1,
-                "dl_src": "00:00:00:00:00:05",
-                "dl_dst": "00:00:00:00:00:04"
-            },
-            "table_id": 0,
-            "dpid": 2
-        },
-        {
-            "priority": 1,
-            "cookie": 0,
-            "idle_timeout": 0,
-            "hard_timeout": 0,
-            "byte_count": 42,
-            "duration_sec": 44,
-            "duration_nsec": 354000000,
-            "packet_count": 1,
-            "length": 104,
-            "flags": 0,
-            "actions": [
-                "OUTPUT:1"
-            ],
-            "match": {
-                "in_port": 2,
                 "dl_src": "00:00:00:00:00:04",
-                "dl_dst": "00:00:00:00:00:05"
+                "dl_dst": "00:00:00:00:00:02"
             },
             "table_id": 0,
             "dpid": 2
@@ -597,10 +629,10 @@
             "cookie": 0,
             "idle_timeout": 0,
             "hard_timeout": 0,
-            "byte_count": 182,
-            "duration_sec": 44,
-            "duration_nsec": 458000000,
-            "packet_count": 3,
+            "byte_count": 2278632,
+            "duration_sec": 21,
+            "duration_nsec": 885000000,
+            "packet_count": 764,
             "length": 104,
             "flags": 0,
             "actions": [
@@ -608,8 +640,8 @@
                 "OUTPUT:2"
             ],
             "match": {
-                "dl_src": "00:00:00:00:00:05",
-                "dl_dst": "00:00:00:00:00:04"
+                "dl_src": "00:00:00:00:00:04",
+                "dl_dst": "00:00:00:00:00:02"
             },
             "table_id": 0,
             "dpid": 3
@@ -619,10 +651,10 @@
             "cookie": 0,
             "idle_timeout": 0,
             "hard_timeout": 0,
-            "byte_count": 42,
-            "duration_sec": 44,
-            "duration_nsec": 368000000,
-            "packet_count": 1,
+            "byte_count": 49088,
+            "duration_sec": 21,
+            "duration_nsec": 626000000,
+            "packet_count": 744,
             "length": 104,
             "flags": 0,
             "actions": [
@@ -630,8 +662,8 @@
             ],
             "match": {
                 "in_port": 2,
-                "dl_src": "00:00:00:00:00:04",
-                "dl_dst": "00:00:00:00:00:05"
+                "dl_src": "00:00:00:00:00:02",
+                "dl_dst": "00:00:00:00:00:04"
             },
             "table_id": 0,
             "dpid": 3
@@ -641,10 +673,10 @@
             "cookie": 0,
             "idle_timeout": 0,
             "hard_timeout": 0,
-            "byte_count": 140,
-            "duration_sec": 46,
-            "duration_nsec": 870000000,
-            "packet_count": 2,
+            "byte_count": 1778,
+            "duration_sec": 28,
+            "duration_nsec": 999000000,
+            "packet_count": 6,
             "length": 104,
             "flags": 0,
             "actions": [
@@ -652,8 +684,8 @@
                 "OUTPUT:3"
             ],
             "match": {
-                "dl_src": "00:00:00:00:00:01",
-                "dl_dst": "00:00:00:00:00:05"
+                "dl_src": "00:00:00:00:00:03",
+                "dl_dst": "00:00:00:00:00:04"
             },
             "table_id": 0,
             "dpid": 1
@@ -663,14 +695,168 @@
             "cookie": 0,
             "idle_timeout": 0,
             "hard_timeout": 0,
-            "byte_count": 182,
-            "duration_sec": 46,
-            "duration_nsec": 866000000,
-            "packet_count": 3,
+            "byte_count": 15344,
+            "duration_sec": 29,
+            "duration_nsec": 1000000,
+            "packet_count": 14,
             "length": 104,
             "flags": 0,
             "actions": [
                 "SET_QUEUE:1",
+                "OUTPUT:3"
+            ],
+            "match": {
+                "dl_src": "00:00:00:00:00:04",
+                "dl_dst": "00:00:00:00:00:03"
+            },
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 100,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 2279292,
+            "duration_sec": 37,
+            "duration_nsec": 760000000,
+            "packet_count": 774,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "SET_QUEUE:1",
+                "OUTPUT:2"
+            ],
+            "match": {
+                "dl_src": "00:00:00:00:00:02",
+                "dl_dst": "00:00:00:00:00:01"
+            },
+            "table_id": 0,
+            "dpid": 1
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 50144,
+            "duration_sec": 37,
+            "duration_nsec": 479000000,
+            "packet_count": 752,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:1"
+            ],
+            "match": {
+                "in_port": 2,
+                "dl_src": "00:00:00:00:00:01",
+                "dl_dst": "00:00:00:00:00:02"
+            },
+            "table_id": 0,
+            "dpid": 1
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 50012,
+            "duration_sec": 37,
+            "duration_nsec": 465000000,
+            "packet_count": 750,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:2"
+            ],
+            "match": {
+                "in_port": 1,
+                "dl_src": "00:00:00:00:00:01",
+                "dl_dst": "00:00:00:00:00:02"
+            },
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 2286656,
+            "duration_sec": 37,
+            "duration_nsec": 423000000,
+            "packet_count": 776,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:1"
+            ],
+            "match": {
+                "in_port": 2,
+                "dl_src": "00:00:00:00:00:02",
+                "dl_dst": "00:00:00:00:00:01"
+            },
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 100,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 50054,
+            "duration_sec": 37,
+            "duration_nsec": 768000000,
+            "packet_count": 751,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "SET_QUEUE:1",
+                "OUTPUT:2"
+            ],
+            "match": {
+                "dl_src": "00:00:00:00:00:01",
+                "dl_dst": "00:00:00:00:00:02"
+            },
+            "table_id": 0,
+            "dpid": 3
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 2286656,
+            "duration_sec": 37,
+            "duration_nsec": 433000000,
+            "packet_count": 776,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:1"
+            ],
+            "match": {
+                "in_port": 2,
+                "dl_src": "00:00:00:00:00:02",
+                "dl_dst": "00:00:00:00:00:01"
+            },
+            "table_id": 0,
+            "dpid": 3
+        },
+        {
+            "priority": 100,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 2028566,
+            "duration_sec": 42,
+            "duration_nsec": 998000000,
+            "packet_count": 706,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "SET_QUEUE:2",
                 "OUTPUT:2"
             ],
             "match": {
@@ -681,14 +867,344 @@
             "dpid": 1
         },
         {
+            "priority": 100,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 61076,
+            "duration_sec": 43,
+            "duration_nsec": 0,
+            "packet_count": 685,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "SET_QUEUE:2",
+                "OUTPUT:4"
+            ],
+            "match": {
+                "dl_src": "00:00:00:00:00:01",
+                "dl_dst": "00:00:00:00:00:05"
+            },
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 100,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 182,
+            "duration_sec": 45,
+            "duration_nsec": 701000000,
+            "packet_count": 3,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "SET_QUEUE:1",
+                "OUTPUT:3"
+            ],
+            "match": {
+                "dl_src": "00:00:00:00:00:05",
+                "dl_dst": "00:00:00:00:00:04"
+            },
+            "table_id": 0,
+            "dpid": 1
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 42,
+            "duration_sec": 45,
+            "duration_nsec": 577000000,
+            "packet_count": 1,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:1"
+            ],
+            "match": {
+                "in_port": 3,
+                "dl_src": "00:00:00:00:00:04",
+                "dl_dst": "00:00:00:00:00:05"
+            },
+            "table_id": 0,
+            "dpid": 1
+        },
+        {
+            "priority": 100,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 140,
+            "duration_sec": 45,
+            "duration_nsec": 709000000,
+            "packet_count": 2,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "SET_QUEUE:1",
+                "OUTPUT:4"
+            ],
+            "match": {
+                "dl_src": "00:00:00:00:00:04",
+                "dl_dst": "00:00:00:00:00:05"
+            },
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 140,
+            "duration_sec": 45,
+            "duration_nsec": 637000000,
+            "packet_count": 2,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:1"
+            ],
+            "match": {
+                "in_port": 4,
+                "dl_src": "00:00:00:00:00:05",
+                "dl_dst": "00:00:00:00:00:04"
+            },
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 17052,
+            "duration_sec": 63,
+            "duration_nsec": 219000000,
+            "packet_count": 17,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:2"
+            ],
+            "match": {
+                "in_port": 3,
+                "dl_src": "00:00:00:00:00:03",
+                "dl_dst": "00:00:00:00:00:02"
+            },
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 16954,
+            "duration_sec": 63,
+            "duration_nsec": 202000000,
+            "packet_count": 16,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:1"
+            ],
+            "match": {
+                "in_port": 2,
+                "dl_src": "00:00:00:00:00:02",
+                "dl_dst": "00:00:00:00:00:03"
+            },
+            "table_id": 0,
+            "dpid": 3
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 61034,
+            "duration_sec": 71,
+            "duration_nsec": 517000000,
+            "packet_count": 684,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:1"
+            ],
+            "match": {
+                "in_port": 2,
+                "dl_src": "00:00:00:00:00:01",
+                "dl_dst": "00:00:00:00:00:05"
+            },
+            "table_id": 0,
+            "dpid": 1
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 2028492,
+            "duration_sec": 71,
+            "duration_nsec": 496000000,
+            "packet_count": 705,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:1"
+            ],
+            "match": {
+                "in_port": 4,
+                "dl_src": "00:00:00:00:00:05",
+                "dl_dst": "00:00:00:00:00:01"
+            },
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 1554,
+            "duration_sec": 82,
+            "duration_nsec": 376000000,
+            "packet_count": 2,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:1"
+            ],
+            "match": {
+                "in_port": 2,
+                "dl_src": "00:00:00:00:00:01",
+                "dl_dst": "00:00:00:00:00:03"
+            },
+            "table_id": 0,
+            "dpid": 1
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 15260,
+            "duration_sec": 82,
+            "duration_nsec": 424000000,
+            "packet_count": 12,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:1"
+            ],
+            "match": {
+                "in_port": 3,
+                "dl_src": "00:00:00:00:00:03",
+                "dl_dst": "00:00:00:00:00:01"
+            },
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 13832,
+            "duration_sec": 95,
+            "duration_nsec": 283000000,
+            "packet_count": 13,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:1"
+            ],
+            "match": {
+                "in_port": 3,
+                "dl_src": "00:00:00:00:00:04",
+                "dl_dst": "00:00:00:00:00:03"
+            },
+            "table_id": 0,
+            "dpid": 1
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 1736,
+            "duration_sec": 95,
+            "duration_nsec": 309000000,
+            "packet_count": 5,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:1"
+            ],
+            "match": {
+                "in_port": 3,
+                "dl_src": "00:00:00:00:00:03",
+                "dl_dst": "00:00:00:00:00:04"
+            },
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 15540,
+            "duration_sec": 99,
+            "duration_nsec": 464000000,
+            "packet_count": 16,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:2"
+            ],
+            "match": {
+                "in_port": 4,
+                "dl_src": "00:00:00:00:00:05",
+                "dl_dst": "00:00:00:00:00:02"
+            },
+            "table_id": 0,
+            "dpid": 2
+        },
+        {
+            "priority": 1,
+            "cookie": 0,
+            "idle_timeout": 0,
+            "hard_timeout": 0,
+            "byte_count": 17052,
+            "duration_sec": 99,
+            "duration_nsec": 506000000,
+            "packet_count": 17,
+            "length": 104,
+            "flags": 0,
+            "actions": [
+                "OUTPUT:1"
+            ],
+            "match": {
+                "in_port": 2,
+                "dl_src": "00:00:00:00:00:02",
+                "dl_dst": "00:00:00:00:00:05"
+            },
+            "table_id": 0,
+            "dpid": 3
+        },
+        {
             "priority": 0,
             "cookie": 0,
             "idle_timeout": 0,
             "hard_timeout": 0,
-            "byte_count": 6400,
-            "duration_sec": 54,
-            "duration_nsec": 69000000,
-            "packet_count": 65,
+            "byte_count": 7328,
+            "duration_sec": 105,
+            "duration_nsec": 238000000,
+            "packet_count": 79,
             "length": 80,
             "flags": 0,
             "actions": [
@@ -703,10 +1219,10 @@
             "cookie": 0,
             "idle_timeout": 0,
             "hard_timeout": 0,
-            "byte_count": 6540,
-            "duration_sec": 54,
-            "duration_nsec": 80000000,
-            "packet_count": 67,
+            "byte_count": 7448,
+            "duration_sec": 105,
+            "duration_nsec": 243000000,
+            "packet_count": 83,
             "length": 80,
             "flags": 0,
             "actions": [
@@ -721,10 +1237,10 @@
             "cookie": 0,
             "idle_timeout": 0,
             "hard_timeout": 0,
-            "byte_count": 5000,
-            "duration_sec": 54,
-            "duration_nsec": 90000000,
-            "packet_count": 64,
+            "byte_count": 5718,
+            "duration_sec": 105,
+            "duration_nsec": 249000000,
+            "packet_count": 77,
             "length": 80,
             "flags": 0,
             "actions": [
@@ -737,230 +1253,391 @@
     ],
     "llm_logs": [
         {
-            "ts": 60.09,
+            "ts": 109.29,
             "type": "slice",
-            "prompt": "ICMP h3->h2",
+            "prompt": "UDP h3->h1",
             "response": {
-                "slice": 2,
-                "reason": "Slice 1 is highly loaded with 1319 packets and 7 flows plus RF queue pressure; slice 2 is less loaded with 688 packets, 3 flows, and RF queues with lower pressure, so choose slice 2 despite ICMP preference to reduce congestion."
+                "slice": 1,
+                "reason": "Slice 2 maintains higher packet count and flows, indicating higher load; slice 1 remains less loaded; no drops reported; protocol tie-breaker not used due to clear load difference."
             }
         },
         {
-            "ts": 56.81,
+            "ts": 107.55,
+            "type": "fix",
+            "prompt": "Elevated latency (latency_avg_ms=966.34, latency_p95_ms=1605.39), moderate flow ",
+            "response": {
+                "action": "set_link_tc",
+                "host": null,
+                "params": {
+                    "node1": "s1",
+                    "node2": "s2",
+                    "bw": 15,
+                    "delay": "3ms"
+                },
+                "reason": "Elevated latency with moderate flow growth and source traffic dominance suggests congestion on link between s1 and s2; adjusting bandwidth and delay can help mitigate latency.",
+                "fix_source": "llm_direct"
+            }
+        },
+        {
+            "ts": 105.66,
+            "type": "anomaly",
+            "prompt": "network state analysis",
+            "response": {
+                "anomaly": true,
+                "details": "Elevated latency (latency_avg_ms=966.34, latency_p95_ms=1605.39), moderate flow growth (6), and source dominance with max_src_share=0.3462; high packet counts on flows from src 00:00:00:00:00:05 and 00:00:00:00:00:04"
+            }
+        },
+        {
+            "ts": 103.43,
+            "type": "slice",
+            "prompt": "UDP h4->h1",
+            "response": {
+                "slice": 1,
+                "reason": "Slice 2 shows significantly higher packets and flows, indicating higher load; slice 1 is less loaded; no drops; UDP protocol tie-breaker not applied due to clear load imbalance."
+            }
+        },
+        {
+            "ts": 101.25,
             "type": "slice",
             "prompt": "ICMP h2->h3",
             "response": {
                 "slice": 2,
-                "reason": "Slice 1 is heavily congested with 1319 packets and 7 flows; slice 2 has fewer flows (3) but moderate packets (686) and less RF queue pressure, so choose slice 2 despite ICMP protocol to reduce congestion."
+                "reason": "Slice 2 has significantly lower flows and packets than slice 1 despite a slight queue increase; no drops; protocol tie-breaker not needed due to load imbalance."
             }
         },
         {
-            "ts": 56.7,
-            "type": "fix",
-            "prompt": "high latency p95=1503.88ms and avg=724.17ms; significant bidirectional traffic w",
-            "response": {
-                "action": "none",
-                "host": null,
-                "params": {},
-                "reason": "Despite high latency and persistent bidirectional traffic, no packet drops or clearly harmful host behavior is observed; conservative approach advises continued monitoring without intervention.",
-                "fix_source": "llm_direct"
-            }
-        },
-        {
-            "ts": 55.11,
-            "type": "anomaly",
-            "prompt": "network state analysis",
-            "response": {
-                "anomaly": true,
-                "details": "high latency p95=1503.88ms and avg=724.17ms; significant bidirectional traffic with over 600 packets each between hosts 00:00:00:00:00:02 and 00:00:00:00:00:05; no drops but suspicious persistent traffic pattern"
-            }
-        },
-        {
-            "ts": 52.82,
-            "type": "slice",
-            "prompt": "TCP h4->h2",
-            "response": {
-                "slice": 2,
-                "reason": "Slice 1 is heavily loaded with 1319 packets and 7 flows and has RF queue; slice 2 is lightly loaded with 40 packets and 3 flows, so select slice 2 to minimize congestion and TCP protocol supports slice 2."
-            }
-        },
-        {
-            "ts": 50.04,
-            "type": "slice",
-            "prompt": "ICMP h4->h2",
-            "response": {
-                "slice": 2,
-                "reason": "Slice 1 has very high packet load (1319) and more flows (7) with RF queues indicating congestion. Slice 2 is less loaded with 39 packets and 3 flows, so choose slice 2 despite ICMP protocol to minimize congestion."
-            }
-        },
-        {
-            "ts": 48.32,
-            "type": "fix",
-            "prompt": "high latency p95=1495.39ms and latency_avg=714.42ms; large bidirectional traffic",
-            "response": {
-                "action": "none",
-                "host": null,
-                "params": {},
-                "reason": "Latency remains high with bidirectional traffic but no packet drops or clear harmful behavior from any host; conservative approach favors monitoring without aggressive changes.",
-                "fix_source": "llm_direct"
-            }
-        },
-        {
-            "ts": 46.76,
-            "type": "anomaly",
-            "prompt": "network state analysis",
-            "response": {
-                "anomaly": true,
-                "details": "high latency p95=1495.39ms and latency_avg=714.42ms; large bidirectional traffic between 00:00:00:00:00:02 and 00:00:00:00:00:05 with over 600 packets each; no drops but suspicious traffic pattern"
-            }
-        },
-        {
-            "ts": 45.33,
-            "type": "slice",
-            "prompt": "UDP h4->h2",
-            "response": {
-                "slice": 2,
-                "reason": "Slice 1 has much higher packet load (1321) and more flows (8) with RF queue, indicating congestion. Slice 2 has low packet and flow count, so select slice 2 to reduce congestion and suit UDP protocol."
-            }
-        },
-        {
-            "ts": 41.24,
-            "type": "slice",
-            "prompt": "UDP h2->h3",
-            "response": {
-                "slice": 2,
-                "reason": "Slice 1 has very high packet load (1321) and flows (8) with RF queue present, indicating congestion. Slice 2 is lightly loaded (14 packets, 2 flows), so select slice 2 to reduce congestion and UDP protocol supports slice 2."
-            }
-        },
-        {
-            "ts": 38.24,
-            "type": "fix",
-            "prompt": "high latency p95=1467.6ms and avg=612.12ms with increased ICMP count=5; flows sh",
-            "response": {
-                "action": "none",
-                "host": null,
-                "params": {},
-                "reason": "High latency and increased ICMP count likely caused by network conditions without clear evidence of harmful hosts or overloaded links; no aggressive action justified at this time.",
-                "fix_source": "llm_direct"
-            }
-        },
-        {
-            "ts": 38.17,
-            "type": "slice",
-            "prompt": "ICMP h5->h2",
-            "response": {
-                "slice": 1,
-                "reason": "Slice 2 shows much higher packet load (1308) with large RF queue; slice 1 has low packet and flow counts, so choose slice 1 to minimize congestion and latency."
-            }
-        },
-        {
-            "ts": 36.68,
-            "type": "anomaly",
-            "prompt": "network state analysis",
-            "response": {
-                "anomaly": true,
-                "details": "high latency p95=1467.6ms and avg=612.12ms with increased ICMP count=5; flows show heavy bidirectional traffic between src=00:00:00:00:00:02 and dst=00:00:00:00:00:05 indicating possible instability or loop"
-            }
-        },
-        {
-            "ts": 34.12,
-            "type": "slice",
-            "prompt": "TCP h5->h2",
-            "response": {
-                "slice": 2,
-                "reason": "Slice 2 has fewer flows (4) but comparable packets (30) versus slice 1 (6 flows, 25 packets). RF queue usage on slice 1 is higher, indicating more pressure. TCP protocol supports choosing slice 2 as tie-breaker."
-            }
-        },
-        {
-            "ts": 31.65,
+            "ts": 99.15,
             "type": "slice",
             "prompt": "ICMP h2->h5",
             "response": {
                 "slice": 2,
-                "reason": "Slice 1 has slightly higher flows and almost equal packets compared to slice 2, but RF shows queue on slice 1; slice 2 is less loaded overall. ICMP tie-break favors slice 1 but pressure bias directs to slice 2."
+                "reason": "Slice 2 shows significantly less pressure with fewer flows and packets compared to slice 1; ICMP protocol tie-breaker less relevant due to clear load imbalance; no drops detected."
             }
         },
         {
-            "ts": 28.95,
+            "ts": 95.94,
             "type": "slice",
-            "prompt": "ICMP h2->h1",
+            "prompt": "TCP h5->h3",
             "response": {
-                "slice": 1,
-                "reason": "Slice 2 has significantly higher packet load (40) and more flows (6) compared to slice 1 (8 packets, 4 flows), so slice 1 is less loaded. ICMP protocol also prefers slice 1."
+                "slice": 2,
+                "reason": "Slice 2 has more flows and packets but within 20% difference; TCP protocol prefers slice 2 as tie-breaker; no host drops reported to affect the decision."
             }
         },
         {
-            "ts": 26.63,
+            "ts": 93.92,
+            "type": "slice",
+            "prompt": "ICMP h2->h3",
+            "response": {
+                "slice": 2,
+                "reason": "Current state shows slice 1 has increased packets (2351) and flows (9) compared to slice 2 (2074 packets, 4 flows). Slice 2 is less loaded based on updated state. No drops detected. ICMP protocol prefers slice 1 only as tie-breaker; given load imbalance, slice 2 is chosen to reduce congestion."
+            }
+        },
+        {
+            "ts": 93.08,
+            "type": "fix",
+            "prompt": "Elevated latency (latency_avg_ms=1024.49, latency_p95_ms=1605.39, icmp_avg_ms=10",
+            "response": {
+                "action": "set_link_tc",
+                "host": null,
+                "params": {
+                    "node1": "s1",
+                    "node2": "s2",
+                    "bw": 15,
+                    "delay": "4ms"
+                },
+                "reason": "Elevated latency and moderate flow growth with significant traffic spikes from multiple sources indicate congestion; adjusting traffic control on link between s1 and s2 can help mitigate latency.",
+                "fix_source": "llm_direct"
+            }
+        },
+        {
+            "ts": 91.26,
             "type": "anomaly",
             "prompt": "network state analysis",
             "response": {
-                "anomaly": false,
-                "details": "window_events=5 below threshold; no drops or blocking; moderate flow growth 16 but no source dominance (max_src_share=0.4)"
+                "anomaly": true,
+                "details": "Elevated latency (latency_avg_ms=1024.49, latency_p95_ms=1605.39, icmp_avg_ms=102.71) with moderate flow growth (6) and significant traffic spikes from 00:00:00:00:00:05, 00:00:00:00:00:03 and 00:00:00:00:00:02"
             }
         },
         {
-            "ts": 24.97,
+            "ts": 89.89,
+            "type": "slice",
+            "prompt": "TCP h4->h2",
+            "response": {
+                "slice": 1,
+                "reason": "Slice 2 remains more loaded with 2734 packets and 5 flows vs 1807 packets and 9 flows on slice 1. No drops reported. Recent queue addition shows low queue for slice 1. Despite TCP protocol favoring slice 2, to reduce congestion slice 1 is preferred."
+            }
+        },
+        {
+            "ts": 85.53,
             "type": "slice",
             "prompt": "UDP h2->h5",
             "response": {
-                "slice": 2,
-                "reason": "Slice 2 has fewer flows and higher packets but less relative load than slice 1; UDP protocol favors slice 2 as tie-breaker."
+                "slice": 1,
+                "reason": "Slice 2 has increased packets (2739) and flows (6) compared to slice 1 (1795 packets, 8 flows) indicating higher load on slice 2. New queue entries also show slice 2 with queue 2 load. No drops reported. To minimize congestion, slice 1 is preferred despite UDP protocol favoring slice 2."
             }
         },
         {
-            "ts": 22.67,
+            "ts": 82.76,
             "type": "slice",
-            "prompt": "ICMP h4->h2",
+            "prompt": "ICMP h3->h4",
             "response": {
                 "slice": 1,
-                "reason": "Slice 2 has 26 packets and 4 flows vs. slice 1's 8 packets and 4 flows, so slice 1 is less loaded. ICMP protocol also prefers slice 1."
+                "reason": "Slice 1 has fewer packets (1805) and flows (9) compared to slice 2 (2079 packets, 5 flows), but the flow queue usage shows slice 1 queues (q1) with lower total q (1+0=1) compared to slice 2 queues (q2) with total q (2+1=3), indicating slice 1 is less loaded. ICMP protocol prefers slice 1 as tie-breaker. No indication of drops or host pressure against slice 1, so slice 1 selected to minimize latency and congestion."
             }
         },
         {
-            "ts": 18.97,
+            "ts": 78.12,
             "type": "slice",
-            "prompt": "UDP h1->h2",
+            "prompt": "UDP h5->h3",
             "response": {
                 "slice": 2,
-                "reason": "Slice 1 has more flows and packets (4 flows, 6 packets) versus slice 2 (2 flows, 14 packets), but considering the packet load, slice 1 has less packet pressure; however, slice 2 is less loaded in flows and suits UDP protocol tie-break."
+                "reason": "Slice 2 flow count is 5 with 2043 packets compared to slice 1's 9 flows and 1578 packets; slice 2 has higher packet load, but flow count difference and protocol UDP preference justify assignment to slice 2."
             }
         },
         {
-            "ts": 16.68,
+            "ts": 74.26,
+            "type": "fix",
+            "prompt": "Sustained elevated latency (icmp_avg_ms=106.02, latency_avg_ms=1016.95, latency_",
+            "response": {
+                "action": "none",
+                "host": null,
+                "params": {},
+                "reason": "Elevated latency with modest flow growth and heavy traffic from sources does not provide clear actionable evidence for intervention; monitoring is recommended before applying any fix.",
+                "fix_source": "llm_direct"
+            }
+        },
+        {
+            "ts": 74.0,
+            "type": "slice",
+            "prompt": "TCP h2->h1",
+            "response": {
+                "slice": 1,
+                "reason": "Slice 2 load with 6 flows and 2728 packets is significantly higher than slice 1 with 8 flows and 1029 packets (over 20% more packets). Assign to less loaded slice 1 to reduce congestion despite TCP preference for slice 2."
+            }
+        },
+        {
+            "ts": 72.64,
             "type": "anomaly",
             "prompt": "network state analysis",
             "response": {
-                "anomaly": false,
-                "details": "Low sample window_events=2; no drops or blocked rules; latency notably high but inconsistent with low sample size"
+                "anomaly": true,
+                "details": "Sustained elevated latency (icmp_avg_ms=106.02, latency_avg_ms=1016.95, latency_p95_ms=1562.79) with modest flow growth (4) and heavy traffic from sources 00:00:00:00:00:05 and 00:00:00:00:00:01"
             }
         },
         {
-            "ts": 16.34,
+            "ts": 68.76,
+            "type": "slice",
+            "prompt": "UDP h5->h1",
+            "response": {
+                "slice": 2,
+                "reason": "Slice 1 load increased to 10 flows with 2409 packets, slice 2 remains at 4 flows and 1337 packets. Slice 2 is less loaded and UDP traffic prefers slice 2, so assign flow to slice 2 to balance load and optimize throughput."
+            }
+        },
+        {
+            "ts": 66.06,
             "type": "slice",
             "prompt": "ICMP h4->h5",
             "response": {
                 "slice": 1,
-                "reason": "Slice 1 has fewer packets (3) and only slightly fewer flows (2) than slice 2 (12 packets, 2 flows), making slice 1 less pressured. ICMP protocol favors slice 1 as tie-breaker."
+                "reason": "Slice 1 has stable load with 8 flows and 2406 packets, slice 2 has 4 flows and 1337 packets, load difference less than 20%. ICMP traffic prefers slice 1, which offers lower latency, making it the better choice given similar load pressure."
             }
         },
         {
-            "ts": 13.91,
-            "type": "slice",
-            "prompt": "ICMP h1->h5",
-            "response": {
-                "slice": 1,
-                "reason": "Slice 2 has 2 flows and 12 packets, with recent queue usage on slice 2; slice 1 is less loaded. ICMP protocol also prefers slice 1 as tie-breaker."
-            }
-        },
-        {
-            "ts": 9.7,
+            "ts": 62.22,
             "type": "slice",
             "prompt": "UDP h2->h3",
             "response": {
                 "slice": 2,
-                "reason": "Both slices have zero flows and packets, so pressure is equal. UDP protocol prefers slice 2 as a tie-breaker."
+                "reason": "Slice 1 load decreased slightly but slice 2 load increased to 4 flows and 1327 packets, showing slice 2 is less loaded proportionally. UDP protocol preference combined with slightly lower pressure on slice 2 justifies assignment to slice 2."
+            }
+        },
+        {
+            "ts": 60.26,
+            "type": "fix",
+            "prompt": "Elevated latency (latency_avg_ms=1042.44, latency_p95_ms=1562.79), increased flo",
+            "response": {
+                "action": "add_link",
+                "host": null,
+                "params": {
+                    "node1": "s1",
+                    "node2": "s2",
+                    "bw": 50,
+                    "delay": "2ms"
+                },
+                "reason": "To alleviate elevated latency and increased flow growth due to large traffic spikes between hosts connected to switches s1 and s2, adding a direct link between these switches will provide an additional path and reduce congestion.",
+                "fix_source": "llm_direct"
+            }
+        },
+        {
+            "ts": 58.26,
+            "type": "slice",
+            "prompt": "UDP h3->h2",
+            "response": {
+                "slice": 2,
+                "reason": "Slice 2 shows increasing load with 3 flows and 1322 packets vs slice 1's 9 flows and 2408 packets; packet load difference is less than 20%. UDP traffic prefers slice 2 as tie-breaker for throughput. No drops detected, assign slice 2 to balance load and match traffic type."
+            }
+        },
+        {
+            "ts": 57.26,
+            "type": "anomaly",
+            "prompt": "network state analysis",
+            "response": {
+                "anomaly": true,
+                "details": "Elevated latency (latency_avg_ms=1042.44, latency_p95_ms=1562.79), increased flow growth (8), large sustained traffic spikes on src=00:00:00:00:00:05 and 00:00:00:00:00:03"
+            }
+        },
+        {
+            "ts": 55.97,
+            "type": "slice",
+            "prompt": "ICMP h4->h1",
+            "response": {
+                "slice": 1,
+                "reason": "Slice 2 load increased significantly to 1022 packets and 3 flows, slice 1 remains at 9 flows and 2405 packets. Pressure difference less than 20%, so use ICMP preference for latency-sensitive traffic, assigning slice 1 to minimize latency."
+            }
+        },
+        {
+            "ts": 51.75,
+            "type": "slice",
+            "prompt": "TCP h5->h3",
+            "response": {
+                "slice": 2,
+                "reason": "Slice 1 remains heavily loaded with 9 flows and 2405 packets, while slice 2 is lightly loaded with 3 flows and 30 packets. Recent flow addition uses queue 1 but no increase in drops. Given TCP flow and significantly lower pressure on slice 2, assign slice 2 to balance load and minimize congestion."
+            }
+        },
+        {
+            "ts": 48.51,
+            "type": "slice",
+            "prompt": "ICMP h2->h3",
+            "response": {
+                "slice": 1,
+                "reason": "Slice 1 has significantly higher packet and flow counts but no drops, indicating stable handling of current load. Both queues show some activity, but slice 2 load is much lower. ICMP traffic preference and latency-sensitive path favor slice 1, minimizing latency without congestion risk."
+            }
+        },
+        {
+            "ts": 44.76,
+            "type": "slice",
+            "prompt": "UDP h1->h5",
+            "response": {
+                "slice": 1,
+                "reason": "Slice 2 has higher packet pressure (1214 packets) than slice 1 (1024 packets) but difference (~18%) is less than 20%; choose slice 1 as less loaded slice."
+            }
+        },
+        {
+            "ts": 42.82,
+            "type": "fix",
+            "prompt": "High latency (latency_avg_ms=974.26, latency_p95_ms=1543.93), increased flow gro",
+            "response": {
+                "action": "set_link_tc",
+                "host": null,
+                "params": {
+                    "node1": "s1",
+                    "node2": "s2",
+                    "bw": 10,
+                    "delay": "5ms"
+                },
+                "reason": "High latency and flow growth likely due to congestion on link between s1 and s2; throttling bandwidth and adding delay to improve traffic flow and reduce latency.",
+                "fix_source": "llm_direct"
+            }
+        },
+        {
+            "ts": 41.13,
+            "type": "anomaly",
+            "prompt": "network state analysis",
+            "response": {
+                "anomaly": true,
+                "details": "High latency (latency_avg_ms=974.26, latency_p95_ms=1543.93), increased flow growth (6), large traffic spikes on src=00:00:00:00:00:04 and 00:00:00:00:00:01 flows"
+            }
+        },
+        {
+            "ts": 39.92,
+            "type": "slice",
+            "prompt": "TCP h5->h1",
+            "response": {
+                "slice": 2,
+                "reason": "Slice 1 has significantly higher flow and packet pressure (6 flows, 1024 packets) than slice 2 (4 flows, 43 packets); choose less loaded slice 2 consistent with TCP protocol preference."
+            }
+        },
+        {
+            "ts": 36.14,
+            "type": "slice",
+            "prompt": "UDP h3->h5",
+            "response": {
+                "slice": 2,
+                "reason": "Slice 1 shows significantly higher flow and packet pressure (6 flows, 892 packets) than slice 2 (4 flows, 32 packets); select less loaded slice 2 despite UDP protocol preference."
+            }
+        },
+        {
+            "ts": 31.45,
+            "type": "slice",
+            "prompt": "TCP h4->h1",
+            "response": {
+                "slice": 1,
+                "reason": "Flow and packet pressure closer but slice 2 has higher packets (32 vs 17); prefer less loaded slice 1 despite TCP protocol favoring slice 2."
+            }
+        },
+        {
+            "ts": 29.29,
+            "type": "slice",
+            "prompt": "ICMP h1->h3",
+            "response": {
+                "slice": 1,
+                "reason": "Slice 2 shows higher flow and packet pressure (4 flows, 30 packets) than slice 1 (2 flows, 14 packets); avoiding more loaded slice 2 despite ICMP protocol favoring slice 1."
+            }
+        },
+        {
+            "ts": 26.08,
+            "type": "slice",
+            "prompt": "ICMP h2->h5",
+            "response": {
+                "slice": 2,
+                "reason": "Slice 1 has higher flow and packet pressure (4 flows, 30 packets) compared to slice 2 (2 flows, 12 packets); choose less loaded slice 2 despite ICMP protocol preference."
+            }
+        },
+        {
+            "ts": 24.42,
+            "type": "anomaly",
+            "prompt": "network state analysis",
+            "response": {
+                "anomaly": false,
+                "details": "Low window events (3) with no drops and moderate latency; conditions do not strongly indicate anomaly."
+            }
+        },
+        {
+            "ts": 22.36,
+            "type": "slice",
+            "prompt": "UDP h3->h5",
+            "response": {
+                "slice": 2,
+                "reason": "Slice 1 has higher flow and packet pressure (4 flows, 28 packets) while slice 2 has none; choose less loaded slice 2 despite UDP protocol preference."
+            }
+        },
+        {
+            "ts": 19.69,
+            "type": "slice",
+            "prompt": "ICMP h2->h5",
+            "response": {
+                "slice": 1,
+                "reason": "Pressure balanced between slices (both 2 flows, 12 packets); protocol ICMP prefers slice 1 as tie-breaker."
+            }
+        },
+        {
+            "ts": 16.14,
+            "type": "slice",
+            "prompt": "UDP h4->h3",
+            "response": {
+                "slice": 1,
+                "reason": "Slice 2 has flow and packet pressure (2 flows, 12 packets) while slice 1 has none; avoiding more loaded slice 2 despite UDP protocol preference."
+            }
+        },
+        {
+            "ts": 12.01,
+            "type": "slice",
+            "prompt": "UDP h5->h2",
+            "response": {
+                "slice": 2,
+                "reason": "Both q1_packets and q2_packets are zero with no current pressure on either slice; protocol is UDP which prefers slice 2 as tie-breaker."
             }
         }
     ],
-    "ts_updated": 1772971265.4172518
+    "ts_updated": 1773000628.5951035
 }

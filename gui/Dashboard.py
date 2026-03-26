@@ -316,11 +316,11 @@ class Dashboard:
     def render_kpi_cards(total_pkts, accepted, dropped, acc_rate, avg_lat):
         k1, k2, k3, k4, k5 = st.columns(5)
         for col, val, lbl in [
-            (k1, total_pkts, "FLUSSI TOTALI"),
-            (k2, accepted, "ACCETTATI"),
-            (k3, dropped, "BLOCCATI"),
+            (k1, total_pkts, "TOTAL FLOWS"),
+            (k2, accepted, "ACCEPTED"),
+            (k3, dropped, "BLOCKED"),
             (k4, f"{acc_rate}%", "ACCEPTANCE RATE"),
-            (k5, f"{avg_lat} ms", "LATENZA MEDIA"),
+            (k5, f"{avg_lat} ms", "AVG LATENCY"),
         ]:
             col.markdown(
                 f"<div class='metric-card'>"
@@ -333,7 +333,7 @@ class Dashboard:
     @staticmethod
     def render_baseline_vs_llm_kpis(events):
         if not events:
-            st.caption("Nessun dato disponibile per il confronto Baseline vs LLM")
+            st.caption("No data available for Baseline vs LLM comparison")
             return
 
         valid_events = [
@@ -341,7 +341,7 @@ class Dashboard:
             if e.get("proto") in {"ICMP", "TCP", "UDP"} and e.get("slice") in {1, 2}
         ]
         if not valid_events:
-            st.caption("Eventi non sufficienti per il confronto Baseline vs LLM")
+            st.caption("Insufficient events for Baseline vs LLM comparison")
             return
 
         total = len(valid_events)
@@ -385,7 +385,7 @@ class Dashboard:
                 <div class='cmp-panel cmp-llm'>
                     <div class='cmp-title'>Intent-Based (LLM)</div>
                     <div class='cmp-grid'>
-                        <div class='cmp-card'><div class='cmp-val'>{total}</div><div class='cmp-lbl'>Flussi (LLM)</div></div>
+                        <div class='cmp-card'><div class='cmp-val'>{total}</div><div class='cmp-lbl'>Flows (LLM)</div></div>
                         <div class='cmp-card'><div class='cmp-val'>{round((llm_s1 / total) * 100, 1)}%</div><div class='cmp-lbl'>Slice 1</div></div>
                         <div class='cmp-card'><div class='cmp-val'>{round((llm_s2 / total) * 100, 1)}%</div><div class='cmp-lbl'>Slice 2</div></div>
                         <div class='cmp-card'><div class='cmp-val'>{llm_acc_rate}%</div><div class='cmp-lbl'>Acceptance Rate</div></div>
@@ -399,19 +399,19 @@ class Dashboard:
             st.markdown(
                 f"""
                 <div class='cmp-panel cmp-base'>
-                    <div class='cmp-title'>Baseline (Regole Statiche)</div>
+                    <div class='cmp-title'>Baseline (Static Rules)</div>
                     <div class='cmp-grid'>
-                        <div class='cmp-card'><div class='cmp-val'>{total}</div><div class='cmp-lbl'>Flussi (Baseline)</div></div>
+                        <div class='cmp-card'><div class='cmp-val'>{total}</div><div class='cmp-lbl'>Flows (Baseline)</div></div>
                         <div class='cmp-card'><div class='cmp-val'>{round((baseline_s1 / total) * 100, 1)}%</div><div class='cmp-lbl'>Slice 1 (ICMP)</div></div>
                         <div class='cmp-card'><div class='cmp-val'>{round((baseline_s2 / total) * 100, 1)}%</div><div class='cmp-lbl'>Slice 2 (TCP/UDP)</div></div>
-                        <div class='cmp-card'><div class='cmp-val'>{disagree} ({disagree_rate:.1f}%)</div><div class='cmp-lbl'>Disaccordi con LLM</div></div>
+                        <div class='cmp-card'><div class='cmp-val'>{disagree} ({disagree_rate:.1f}%)</div><div class='cmp-lbl'>Disagreements with LLM</div></div>
                     </div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
 
-        st.caption("Baseline usata nel confronto: ICMP → Slice 1, TCP/UDP → Slice 2")
+        st.caption("Baseline used in comparison: ICMP → Slice 1, TCP/UDP → Slice 2")
 
     @staticmethod
     def render_live_event_feed(events):
@@ -441,26 +441,26 @@ class Dashboard:
         else:
             st.markdown(
                 "<div style='color:#3d6fe8; text-align:center; margin-top:60px; font-size:.9rem;'>"
-                "⏳ In attesa di traffico...<br><small>Avvia networkGeneration2.py</small></div>",
+                "⏳ Waiting for traffic...<br><small>Start networkGeneration.py</small></div>",
                 unsafe_allow_html=True,
             )
 
     @staticmethod
     def render_block_causes(events, blocked_hosts):
-        st.markdown("<div class='sec-header'>Cause blocco</div>", unsafe_allow_html=True)
+        st.markdown("<div class='sec-header'>Block causes</div>", unsafe_allow_html=True)
 
         dropped_events = [e for e in events if not e.get("accepted")]
         if not dropped_events:
             st.markdown(
                 "<div style='color:#3d6fe8; text-align:center; margin-top:20px;'>"
-                "✓ Nessun blocco rilevato negli ultimi eventi"
+                "✓ No blocks detected in recent events"
                 "</div>",
                 unsafe_allow_html=True,
             )
             return
 
         causes = {
-            "Host isolato": 0,
+            "Isolated host": 0,
             "Timeout probe": 0,
             "LLM fallback": 0,
         }
@@ -472,7 +472,7 @@ class Dashboard:
             latency = float(e.get("latency_ms", 0) or 0)
 
             if src in blocked_hosts or dst in blocked_hosts:
-                causes["Host isolato"] += 1
+                causes["Isolated host"] += 1
             elif "LLM unavailable" in reason or "Parse error" in reason:
                 causes["LLM fallback"] += 1
             elif latency >= 3000:
@@ -480,7 +480,7 @@ class Dashboard:
 
         c1, c2, c3 = st.columns(3)
         for col, label in [
-            (c1, "Host isolato"),
+            (c1, "Isolated host"),
             (c2, "Timeout probe"),
             (c3, "LLM fallback"),
         ]:
@@ -495,7 +495,7 @@ class Dashboard:
     @staticmethod
     def render_host_stats(node_stats, topo_data):
 
-        st.markdown("<div class='sec-header'>Dettaglio Statistiche Host</div>", unsafe_allow_html=True)
+        st.markdown("<div class='sec-header'>Host Statistics Detail</div>", unsafe_allow_html=True)
 
         if node_stats:
 
@@ -511,7 +511,7 @@ class Dashboard:
                 "<th>RX</th>"
                 "<th>DROP</th>"
                 "<th>TOT</th>"
-                "<th>STATO</th>"
+                "<th>STATUS</th>"
                 "</tr>"
                 "</thead>"
                 "<tbody>"
@@ -532,9 +532,9 @@ class Dashboard:
                 blocked = node in st.session_state.blocked_hosts
 
                 stato = (
-                    "<span class='badge-err'>ISOLATO</span>"
+                    "<span class='badge-err'>ISOLATED</span>"
                     if blocked else
-                    "<span class='badge-ok'>ATTIVO</span>"
+                    "<span class='badge-ok'>ACTIVE</span>"
                 )
 
                 row_class = "err" if blocked else "ok"
@@ -561,7 +561,7 @@ class Dashboard:
 
             st.markdown(
                 "<div style='color:#3d6fe8; text-align:center; margin-top:40px;'>"
-                "⏳ Nessuna statistica host disponibile"
+                "⏳ No host statistics available"
                 "</div>",
                 unsafe_allow_html=True,
             )
@@ -642,7 +642,7 @@ class Dashboard:
 
             st.markdown(
                 "<div style='color:#3d6fe8; text-align:center; margin-top:40px;'>"
-                "Nessun flow installato"
+                "No flows installed"
                 "</div>",
                 unsafe_allow_html=True,
             )
@@ -657,7 +657,7 @@ class Dashboard:
         if not llm_logs:
             st.markdown(
                 "<div style='color:#3d6fe8; text-align:center; margin-top:20px;'>"
-                "⏳ Nessuna chiamata LLM ancora...</div>",
+                "⏳ No LLM calls yet...</div>",
                 unsafe_allow_html=True,
             )
             return
@@ -758,7 +758,7 @@ class Dashboard:
         st.markdown("<div class='sec-header'>🧾 LLM Raw Calls</div>", unsafe_allow_html=True)
 
         if not log_path.exists():
-            st.caption(f"Nessun file log trovato: {log_path}")
+            st.caption(f"No log file found: {log_path}")
             return
 
         entries = []
@@ -773,11 +773,11 @@ class Dashboard:
                     except json.JSONDecodeError:
                         continue
         except Exception as e:
-            st.error(f"Errore lettura log modello: {e}")
+            st.error(f"Error reading model log: {e}")
             return
 
         if not entries:
-            st.caption("File log vuoto")
+            st.caption("Log file is empty")
             return
 
         last = entries[-1]
@@ -795,10 +795,10 @@ class Dashboard:
 
     @staticmethod
     def render_gui_actions(log_path):
-        st.markdown("<div class='sec-header'>🧰 Ultime azioni GUI</div>", unsafe_allow_html=True)
+        st.markdown("<div class='sec-header'>🧰 Latest GUI Actions</div>", unsafe_allow_html=True)
 
         if not log_path.exists():
-            st.caption("Nessuna azione GUI registrata")
+            st.caption("No GUI actions recorded")
             return
 
         entries = []
@@ -813,11 +813,11 @@ class Dashboard:
                     except json.JSONDecodeError:
                         continue
         except Exception as e:
-            st.error(f"Errore lettura azioni GUI: {e}")
+            st.error(f"Error reading GUI actions: {e}")
             return
 
         if not entries:
-            st.caption("File azioni GUI vuoto")
+            st.caption("GUI actions file is empty")
             return
 
         rows = []
@@ -874,7 +874,7 @@ class Dashboard:
 
         topo_data = self.loader.load_topology()
         if not topo_data:
-            st.error("⚠ topology.json non trovato. Avvia prima **networkGeneration2.py**.")
+            st.error("⚠ topology.json not found. Start **networkGeneration.py** first.")
             st.stop()
 
         metrics_data = self.loader.load_metrics()
@@ -914,7 +914,7 @@ class Dashboard:
         col_topo, col_events = st.columns([3, 2])
 
         with col_topo:
-            st.markdown("<div class='sec-header'>Topologia di Rete</div>", unsafe_allow_html=True)
+            st.markdown("<div class='sec-header'>Network Topology</div>", unsafe_allow_html=True)
             G = self.vis.build_graph(topo_data)
 
             active_pkts = [(e["src"], e["dst"]) for e in events[:3]] if events else []
@@ -931,38 +931,38 @@ class Dashboard:
         col_pie, col_tl, col_lat = st.columns(3)
 
         with col_pie:
-            st.markdown("<div class='sec-header'>Distribuzione Protocolli</div>", unsafe_allow_html=True)
+            st.markdown("<div class='sec-header'>Protocol Distribution</div>", unsafe_allow_html=True)
             fig_p = self.proto_pie(events)
             if fig_p:
                 st.plotly_chart(fig_p, key="pie", config={"displayModeBar": False})
             else:
-                st.caption("Nessun dato disponibile")
+                st.caption("No data available")
 
         with col_tl:
-            st.markdown("<div class='sec-header'>Throughput nel Tempo</div>", unsafe_allow_html=True)
+            st.markdown("<div class='sec-header'>Throughput over Time</div>", unsafe_allow_html=True)
             fig_t = self.throughput_timeline(events)
             if fig_t:
                 st.plotly_chart(fig_t, key="timeline", config={"displayModeBar": False})
             else:
-                st.caption("Nessun dato disponibile")
+                st.caption("No data available")
 
         with col_lat:
-            st.markdown("<div class='sec-header'>Latenza (ms)</div>", unsafe_allow_html=True)
+            st.markdown("<div class='sec-header'>Latency (ms)</div>", unsafe_allow_html=True)
             fig_l = self.latency_chart(events)
             if fig_l:
                 st.plotly_chart(fig_l, key="latency", config={"displayModeBar": False})
             else:
-                st.caption("Nessun dato disponibile")
+                st.caption("No data available")
 
         st.markdown("---")
 
-        st.markdown("<div class='sec-header'>Statistiche per Nodo (TX / RX / Drops)</div>", unsafe_allow_html=True)
+        st.markdown("<div class='sec-header'>Node Statistics (TX / RX / Drops)</div>", unsafe_allow_html=True)
 
         fig_n = self.node_stats_chart(node_stats)
         if fig_n:
             st.plotly_chart(fig_n, key="nodestats", config={"displayModeBar": False})
         else:
-            st.caption("Nessun dato disponibile")
+            st.caption("No data available")
 
         self.render_flow_table(node_stats, topo_data, flow_table)
 
@@ -979,7 +979,7 @@ class Dashboard:
             if fig_slice:
                 st.plotly_chart(fig_slice, key="slice_dist", config={"displayModeBar": False})
             else:
-                st.caption("Nessun dato slice disponibile")
+                st.caption("No slice data available")
 
         with tab_llm_raw:
             self.render_llm_raw_calls(PATH_LLM_CALLS)
@@ -992,7 +992,7 @@ class Dashboard:
 
         st.markdown(
             f"<div style='text-align:right; color:#1e3a5f; font-size:.7rem; margin-top:24px;'>"
-            f"Auto-refresh ogni {REFRESH_SEC}s · {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</div>",
+            f"Auto-refresh every {REFRESH_SEC}s · {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</div>",
             unsafe_allow_html=True,
         )
         time.sleep(REFRESH_SEC)

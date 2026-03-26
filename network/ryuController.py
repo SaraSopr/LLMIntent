@@ -108,7 +108,7 @@ class RyuController:
                 timeout=2,
             )
             queue_label = f"queue={queue_id}" if queue_id > 0 else "no queue"
-            print(f"[✅] Flow → dpid={dpid} porta={port} {queue_label}, HTTP {r.status_code}")
+            print(f"[✅] Flow → dpid={dpid} port={port} {queue_label}, HTTP {r.status_code}")
         except Exception as e:
             print(f"[⚠️] install_flow: {e}")
 
@@ -126,7 +126,7 @@ class RyuController:
                 json=flow,
                 timeout=2,
             )
-            print(f"[🚫] Drop rule → dpid={dpid} porta={port} mac={src_mac}, HTTP {r.status_code}")
+            print(f"[🚫] Drop rule → dpid={dpid} port={port} mac={src_mac}, HTTP {r.status_code}")
         except Exception as e:
             print(f"[⚠️] install_drop_rule: {e}")
 
@@ -163,7 +163,7 @@ class RyuController:
                 "action": "set_link_tc",
                 "node1": node1,
                 "node2": node2,
-                "error": "Mininet net non collegata al controller",
+                "error": "Mininet net not connected to controller",
             }
 
         try:
@@ -176,7 +176,7 @@ class RyuController:
                     "action": "set_link_tc",
                     "node1": node1,
                     "node2": node2,
-                    "error": "link non trovato",
+                    "error": "link not found",
                 }
 
             params = {}
@@ -192,7 +192,7 @@ class RyuController:
                     "action": "set_link_tc",
                     "node1": node1,
                     "node2": node2,
-                    "error": "nessun parametro TC valido (bw/delay)",
+                    "error": "no valid TC parameter (bw/delay)",
                 }
 
             for link in links:
@@ -224,7 +224,7 @@ class RyuController:
                 "action": "add_link",
                 "node1": node1,
                 "node2": node2,
-                "error": "Mininet net non collegata al controller",
+                "error": "Mininet net not connected to controller",
             }
 
         try:
@@ -237,7 +237,7 @@ class RyuController:
                     "action": "add_link",
                     "node1": node1,
                     "node2": node2,
-                    "error": "link già esistente",
+                    "error": "link already exists",
                 }
 
             link_params = {}
@@ -273,7 +273,7 @@ class RyuController:
                 "action": "remove_link",
                 "node1": node1,
                 "node2": node2,
-                "error": "Mininet net non collegata al controller",
+                "error": "Mininet net not connected to controller",
             }
 
         try:
@@ -286,7 +286,7 @@ class RyuController:
                     "action": "remove_link",
                     "node1": node1,
                     "node2": node2,
-                    "error": "link non presente",
+                    "error": "link not present",
                 }
 
             for link in links:

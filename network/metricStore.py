@@ -89,4 +89,4 @@ class MetricsStore:
             with open(filepath, "w") as f:
                 json.dump(snap, f, indent=4)
         except Exception as e:
-            print(f"[⚠️] Errore scrittura metrics: {e}")
+            print(f"[⚠️] Error writing metrics: {e}")

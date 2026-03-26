@@ -9,7 +9,7 @@ class DataLoader:
 
     @st.cache_data(ttl=0)
     def load_topology(_self):
-        """Legge il file di topologia."""
+        """Reads the topology file."""
         if os.path.exists(_self.topo_path):
             with open(_self.topo_path) as f:
                 return json.load(f)

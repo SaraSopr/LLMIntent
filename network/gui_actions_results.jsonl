@@ -1,0 +1,1 @@
+{"request_id": "cfca9436-b560-4dd8-993c-2fe0d07a1dab", "ts": "2026-03-08T20:09:52.870Z", "source": "gui", "requested_ts": "2026-03-08T20:09:52.208Z", "action": "set_link_tc", "host": null, "params": {"node1": "s1", "node2": "s2", "bw": 10.0, "delay": "3ms"}, "reason": "manual_gui", "success": true}

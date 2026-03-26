@@ -64,10 +64,10 @@ class Visualizer:
         # Legend
         legend_items = [
             mpatches.Patch(color=cls.COLORS["switch"], label="Switch"),
-            mpatches.Patch(color=cls.COLORS["host_active"], label="Host attivo"),
-            mpatches.Patch(color=cls.COLORS["host_blocked"], label="Host isolato"),
-            mpatches.Patch(color="#3498db", label="Percorso Dijkstra"),
-            mpatches.Patch(color="#ff9800", label="Traffico attivo"),
+            mpatches.Patch(color=cls.COLORS["host_active"], label="Active host"),
+            mpatches.Patch(color=cls.COLORS["host_blocked"], label="Isolated host"),
+            mpatches.Patch(color="#3498db", label="Dijkstra path"),
+            mpatches.Patch(color="#ff9800", label="Active traffic"),
         ]
         ax.legend(handles=legend_items, loc="lower left",
                   facecolor="#0d1b2a", edgecolor="#334",

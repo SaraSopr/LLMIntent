@@ -42,14 +42,14 @@ class SidebarManager:
         else:
             st.sidebar.markdown(
                 "<div style='color:#ff9800; font-size:.8rem; text-align:center;'>"
-                "⚠ metrics.json non trovato — avvia networkGeneration2.py</div>",
+                "⚠ metrics.json not found — start networkGeneration.py</div>",
                 unsafe_allow_html=True,
             )
 
         st.sidebar.markdown("---")
-        st.sidebar.markdown("<div class='sec-header'>🔒 Sicurezza Host</div>", unsafe_allow_html=True)
+        st.sidebar.markdown("<div class='sec-header'>🔒 Host Security</div>", unsafe_allow_html=True)
 
-        target_host = st.sidebar.selectbox("Seleziona Host", self.topo_data["hosts"])
+        target_host = st.sidebar.selectbox("Select Host", self.topo_data["hosts"])
         link_info = next(
             (
                 l
@@ -74,41 +74,41 @@ class SidebarManager:
 
             col1, col2 = st.sidebar.columns(2)
             with col1:
-                if st.button("🚫 Isola", use_container_width=True):
+                if st.button("🚫 Isolate", use_container_width=True):
                     resp = self.controller.send_rule("BLOCK", dpid, port, mac)
                     if self._ok_response(resp):
                         if target_host not in st.session_state.blocked_hosts:
                             st.session_state.blocked_hosts.append(target_host)
-                        st.toast(f"🚫 {target_host} isolato!")
+                        st.toast(f"🚫 {target_host} isolated!")
                         st.rerun()
                     else:
-                        st.sidebar.error(self._format_response_error(resp, "Isolamento fallito"))
+                        st.sidebar.error(self._format_response_error(resp, "Isolation failed"))
 
             with col2:
-                if st.button("✅ Sblocca", use_container_width=True):
+                if st.button("✅ Unblock", use_container_width=True):
                     resp = self.controller.send_rule("UNBLOCK", dpid, port, mac)
                     if self._ok_response(resp):
                         if target_host in st.session_state.blocked_hosts:
                             st.session_state.blocked_hosts.remove(target_host)
-                        st.toast(f"✅ {target_host} ripristinato!")
+                        st.toast(f"✅ {target_host} restored!")
                         st.rerun()
                     else:
-                        st.sidebar.error(self._format_response_error(resp, "Sblocco fallito"))
+                        st.sidebar.error(self._format_response_error(resp, "Unblock failed"))
 
             if target_host in st.session_state.blocked_hosts:
                 st.sidebar.markdown(
-                    f"<div class='alert-box'>⚠ {target_host} è attualmente isolato</div>",
+                    f"<div class='alert-box'>⚠ {target_host} is currently isolated</div>",
                     unsafe_allow_html=True,
                 )
             else:
                 st.sidebar.markdown(
-                    f"<div class='ok-box'>✔ {target_host} attivo e raggiungibile</div>",
+                    f"<div class='ok-box'>✔ {target_host} active and reachable</div>",
                     unsafe_allow_html=True,
                 )
 
             blocked_count = len(st.session_state.blocked_hosts)
             if blocked_count > 0:
-                if st.sidebar.button(f"🧹 Sblocca tutti ({blocked_count})", use_container_width=True):
+                if st.sidebar.button(f"🧹 Unblock all ({blocked_count})", use_container_width=True):
                     failed = []
                     for host in list(st.session_state.blocked_hosts):
                         host_link = next(
@@ -134,14 +134,14 @@ class SidebarManager:
 
                     st.session_state.blocked_hosts = failed
                     if failed:
-                        st.sidebar.warning(f"⚠ Sblocco parziale. Non ripristinati: {', '.join(failed)}")
+                        st.sidebar.warning(f"⚠ Partial unblock. Not restored: {', '.join(failed)}")
                     else:
-                        st.toast("✅ Tutti gli host sono stati ripristinati")
+                        st.toast("✅ All hosts have been restored")
                     st.rerun()
 
         st.sidebar.markdown("---")
         st.sidebar.caption(
-            f"Aggiornato ogni {self.refresh_sec}s | {datetime.now().strftime('%H:%M:%S')}"
+            f"Updated every {self.refresh_sec}s | {datetime.now().strftime('%H:%M:%S')}"
         )
 
         self.link_controls()
@@ -150,11 +150,11 @@ class SidebarManager:
 
     def link_controls(self):
         st.sidebar.markdown("---")
-        st.sidebar.markdown("<div class='sec-header'>🛠️ Gestione Link</div>", unsafe_allow_html=True)
+        st.sidebar.markdown("<div class='sec-header'>🛠️ Link Management</div>", unsafe_allow_html=True)
 
         all_nodes = sorted(set(self.topo_data.get("hosts", [])) | set(self.topo_data.get("switches", [])))
         if len(all_nodes) < 2:
-            st.sidebar.caption("Nodi insufficienti per operazioni link")
+            st.sidebar.caption("Insufficient nodes for link operations")
             return
 
         existing_links = []
@@ -177,7 +177,7 @@ class SidebarManager:
         ]
 
         action = st.sidebar.selectbox(
-            "Azione link",
+            "Link action",
             ["set_link_tc", "add_link", "remove_link"],
             key="gui_link_action",
         )
@@ -185,15 +185,15 @@ class SidebarManager:
         if action in {"set_link_tc", "remove_link"}:
             selectable = existing_switch_links if action == "remove_link" else existing_links
             if not selectable:
-                st.sidebar.warning("Nessun link disponibile in topologia")
+                st.sidebar.warning("No links available in topology")
                 return
             labels = [f"{a} ↔ {b}" for a, b in selectable]
-            selected_label = st.sidebar.selectbox("Link esistente", labels, key=f"{action}_pair")
+            selected_label = st.sidebar.selectbox("Existing link", labels, key=f"{action}_pair")
             idx = labels.index(selected_label)
             node1, node2 = selectable[idx]
         else:
             if len(switch_nodes) < 2:
-                st.sidebar.warning("Servono almeno due switch per aggiungere un link s-s")
+                st.sidebar.warning("At least two switches required to add an s-s link")
                 return
             c1, c2 = st.sidebar.columns(2)
             with c1:
@@ -205,34 +205,34 @@ class SidebarManager:
         params = {"node1": node1, "node2": node2}
 
         if action in {"set_link_tc", "add_link"}:
-            use_bw = st.sidebar.checkbox("Imposta bandwidth (Mbps)", value=(action == "set_link_tc"), key=f"{action}_use_bw")
+            use_bw = st.sidebar.checkbox("Set bandwidth (Mbps)", value=(action == "set_link_tc"), key=f"{action}_use_bw")
             if use_bw:
                 bw = st.sidebar.number_input("BW Mbps", min_value=1, max_value=10000, value=20, step=1, key=f"{action}_bw")
                 params["bw"] = float(bw)
 
-            delay = st.sidebar.text_input("Delay (es. 3ms)", value="" if action == "add_link" else "3ms", key=f"{action}_delay")
+            delay = st.sidebar.text_input("Delay (e.g. 3ms)", value="" if action == "add_link" else "3ms", key=f"{action}_delay")
             if delay.strip():
                 params["delay"] = delay.strip()
 
-        if st.sidebar.button("Invia azione", use_container_width=True, key=f"submit_{action}"):
+        if st.sidebar.button("Submit action", use_container_width=True, key=f"submit_{action}"):
             try:
                 request_id = self.controller.enqueue_action(action=action, params=params, reason="manual_gui")
                 st.session_state["last_gui_action_id"] = request_id
-                st.toast(f"Azione in coda: {action}")
+                st.toast(f"Action queued: {action}")
             except Exception as e:
-                st.sidebar.error(f"Invio azione fallito: {e}")
+                st.sidebar.error(f"Failed to submit action: {e}")
 
         pending_id = st.session_state.get("last_gui_action_id")
         if pending_id:
             result = self.controller.get_action_result(pending_id)
             if not result:
-                st.sidebar.info("Azione in attesa di esecuzione...")
+                st.sidebar.info("Action pending execution...")
             else:
                 if result.get("success"):
-                    st.sidebar.success(f"✅ {result.get('action')} eseguita")
+                    st.sidebar.success(f"✅ {result.get('action')} executed")
                 else:
-                    err = result.get("error", "errore sconosciuto")
-                    st.sidebar.error(f"❌ {result.get('action')} fallita: {err}")
+                    err = result.get("error", "unknown error")
+                    st.sidebar.error(f"❌ {result.get('action')} failed: {err}")
 
     @staticmethod
     def _ok_response(resp):
@@ -241,7 +241,7 @@ class SidebarManager:
     @staticmethod
     def _format_response_error(resp, prefix: str) -> str:
         if resp is None:
-            return f"{prefix}: controller non raggiungibile"
+            return f"{prefix}: controller unreachable"
         body = (resp.text or "").strip().replace("\n", " ")
         if len(body) > 140:
             body = body[:140] + "..."

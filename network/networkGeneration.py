@@ -88,7 +88,7 @@ class SDNExperiment:
     # ── SETUP ─────────────────────────────────────────────────────────────────
 
     def _kill_old_processes(self):
-        print("[🧹] Pulizia preventiva...")
+        print("[🧹] Cleaning up old processes...")
         os.system("sudo pkill -9 iperf 2>/dev/null")
         os.system("sudo pkill -9 ping  2>/dev/null")
         os.system("sudo pkill -9 nc    2>/dev/null")
@@ -97,7 +97,7 @@ class SDNExperiment:
         time.sleep(2)
 
     def _start_ryu(self) -> subprocess.Popen:
-        print("[⚡] Avvio Controller RYU...")
+        print("[⚡] Starting RYU Controller...")
         return subprocess.Popen(
             ["ryu-manager", "ryu.app.simple_switch_13", "ryu.app.ofctl_rest"],
             stdout=subprocess.DEVNULL,
@@ -124,7 +124,7 @@ class SDNExperiment:
                 path.write_text("")
                 print(f"[🧾] {label} azzerato: {path}")
             except Exception as e:
-                print(f"[⚠️] Impossibile azzerare {label}: {e}")
+                print(f"[⚠️] Unable to reset {label}: {e}")
 
     # ── RUN ───────────────────────────────────────────────────────────────────
 
@@ -180,8 +180,8 @@ class SDNExperiment:
             t.start()
 
         print(
-            f"[⏱️] Rete attiva per {self.runtime}s — "
-            "Avvia la GUI con: streamlit run app_gui_advanced.py"
+            f"[⏱️] Network active for {self.runtime}s — "
+            "Start the GUI with: streamlit run gui/Dashboard.py"
         )
         try:
             time.sleep(self.runtime)
@@ -193,7 +193,7 @@ class SDNExperiment:
     # ── TEARDOWN ──────────────────────────────────────────────────────────────
 
     def _stop_all(self, ryu_proc: subprocess.Popen, topo_obj):
-        print("[🧹] Spegnimento in corso...")
+        print("[🧹] Shutting down...")
         self.metrics.running = False
         self.metrics.persist(METRICS_FILE)
         self.stop_event.set()

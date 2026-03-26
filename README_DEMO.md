@@ -1,100 +1,100 @@
 # Demo Checklist — LLMIntent
 
-Questa guida valida la parte **intent-based fix actions** (`set_link_tc`, `add_link`, `remove_link`) con evidenze verificabili.
+This guide validates the **intent-based fix actions** (`set_link_tc`, `add_link`, `remove_link`) with verifiable evidence.
 
 ## 1) Setup
 
-1. Avvia esperimento SDN:
+1. Start the SDN experiment:
    - `sudo python3 network/networkGeneration.py`
-2. Avvia dashboard:
+2. Start the dashboard:
    - `streamlit run gui/Dashboard.py`
-3. Verifica file di osservabilità:
+3. Verify observability files:
    - `network/llm_calls.jsonl`
    - `network/gui_actions_results.jsonl`
    - `network/metrics.json`
 
-## 2) Cosa stiamo validando
+## 2) What we are validating
 
-Nel prompt `network/templates/fix_intent.j2`, il modello può proporre:
+In the prompt `network/templates/fix_intent.j2`, the model can propose:
 - `set_link_tc`
-- `add_link` (solo switch-switch)
-- `remove_link` (solo switch-switch)
+- `add_link` (switch-to-switch only)
+- `remove_link` (switch-to-switch only)
 
-Con schema JSON:
+With JSON schema:
 - `action`, `host`, `params`, `reason`
 
 ## 3) Scenario A — set_link_tc
 
-### Obiettivo
-Verificare che l’LLM proponga `set_link_tc` con parametri validi quando vede congestione/latenza.
+### Goal
+Verify that the LLM proposes `set_link_tc` with valid parameters when it detects congestion or latency degradation.
 
-### Passi
-1. Lascia girare traffico finché compare anomalia in monitor/dashboard.
-2. Controlla l’ultima entry `query_kind: "fix"` in `network/llm_calls.jsonl`.
-3. Verifica che il JSON abbia:
+### Steps
+1. Let traffic run until an anomaly appears in the monitor/dashboard.
+2. Check the latest `query_kind: "fix"` entry in `network/llm_calls.jsonl`.
+3. Verify the JSON contains:
    - `"action": "set_link_tc"`
    - `params.node1`, `params.node2`
-   - almeno uno tra `params.bw` o `params.delay`
-4. Verifica applicazione in runtime (`[🔧 FIX] TC aggiornato ...`).
+   - at least one of `params.bw` or `params.delay`
+4. Verify runtime application (`[🔧 FIX] TC updated ...`).
 
-### Evidenza da screenshot
-- Riga in `llm_calls.jsonl` con fix `set_link_tc`
-- Log runtime di applicazione
+### Screenshot evidence
+- Row in `llm_calls.jsonl` with fix `set_link_tc`
+- Runtime application log
 
-## 4) Scenario B — add_link (switch-switch)
+## 4) Scenario B — add_link (switch-to-switch)
 
-### Obiettivo
-Verificare proposta ed esecuzione di un nuovo link tra switch.
+### Goal
+Verify proposal and execution of a new link between switches.
 
-### Passi
-1. Induci scenario di path degradato / necessità percorso alternativo.
-2. Attendi fix LLM.
-3. Verifica in `network/llm_calls.jsonl`:
+### Steps
+1. Induce a degraded path scenario or need for an alternative route.
+2. Wait for the LLM fix.
+3. Verify in `network/llm_calls.jsonl`:
    - `"action": "add_link"`
-   - `params.node1`, `params.node2` entrambi tipo `sX`
-4. Verifica esecuzione e aggiornamento topologia (`network/topology.json`).
+   - `params.node1`, `params.node2` both of type `sX`
+4. Verify execution and topology update (`network/topology.json`).
 
-### Evidenza da screenshot
+### Screenshot evidence
 - JSON fix `add_link`
-- Estratto `network/topology.json` con nuovo link s-s
+- Extract from `network/topology.json` with new s-s link
 
-## 5) Scenario C — remove_link (switch-switch)
+## 5) Scenario C — remove_link (switch-to-switch)
 
-### Obiettivo
-Verificare proposta ed esecuzione di rimozione link tra switch.
+### Goal
+Verify proposal and execution of link removal between switches.
 
-### Passi
-1. Dopo aggiunta link o scenario di overload, attendi proposta di rimozione.
-2. Verifica in `network/llm_calls.jsonl`:
+### Steps
+1. After adding a link or in an overload scenario, wait for a removal proposal.
+2. Verify in `network/llm_calls.jsonl`:
    - `"action": "remove_link"`
-   - `params.node1`, `params.node2` entrambi `sX`
-3. Verifica esecuzione e rimozione dal `network/topology.json`.
+   - `params.node1`, `params.node2` both `sX`
+3. Verify execution and removal from `network/topology.json`.
 
-### Evidenza da screenshot
+### Screenshot evidence
 - JSON fix `remove_link`
-- Topologia aggiornata senza il link
+- Updated topology without the link
 
-## 6) Validazione lato dashboard (executor)
+## 6) Dashboard-side validation (executor)
 
-La sidebar **Gestione Link** testa l’esecutore backend (non la decisione LLM):
-- invii manuali di `set_link_tc` / `add_link` / `remove_link`
-- esito in `network/gui_actions_results.jsonl`
+The **Link Management** sidebar tests the backend executor (not the LLM decision):
+- Manual submissions of `set_link_tc` / `add_link` / `remove_link`
+- Result in `network/gui_actions_results.jsonl`
 
-Usala per verificare robustezza dell’applicazione action, separatamente dalla qualità della decisione del modello.
+Use it to verify action application robustness, independently from model decision quality.
 
-## 7) Criteri di superamento
+## 7) Pass criteria
 
-Per ciascuno scenario:
-1. JSON `fix` conforme allo schema
-2. Parametri coerenti con vincoli del prompt
-3. Azione realmente applicata dal northbound
-4. Evidenza persistita su log/file
+For each scenario:
+1. `fix` JSON conforming to the schema
+2. Parameters consistent with prompt constraints
+3. Action actually applied by the northbound layer
+4. Evidence persisted to logs/files
 
-## 8) Comandi rapidi utili
+## 8) Useful quick commands
 
-- Ultime fix LLM:
+- Latest LLM fixes:
   - `grep '"query_kind": "fix"' network/llm_calls.jsonl | tail -n 5`
-- Ultimi risultati azioni GUI:
+- Latest GUI action results:
   - `tail -n 10 network/gui_actions_results.jsonl`
-- Stato metriche runtime:
+- Runtime metrics state:
   - `cat network/metrics.json`
