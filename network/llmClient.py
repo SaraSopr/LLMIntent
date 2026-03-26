@@ -43,10 +43,6 @@ LLM_CALLS_LOG_FILE = os.getenv("LLM_CALLS_LOG_FILE", "network/llm_calls.jsonl")
 TOPOLOGY_FILE = os.getenv("TOPOLOGY_FILE", "topology.json")
 FIX_DEMO_MODE = os.getenv("FIX_DEMO_MODE", "").strip().lower()
 
-SLICE_DESCRIPTIONS = {
-    1: "High-priority slice: low latency, for ICMP and interactive traffic",
-    2: "High-throughput slice: bulk transfer, for TCP and UDP traffic",
-}
 
 _TEMPLATE_DIR = Path(__file__).resolve().parent / "templates"
 _JINJA_ENV = Environment(

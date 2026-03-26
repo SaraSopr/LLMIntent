@@ -13,18 +13,6 @@ class SidebarManager:
         if "blocked_hosts" not in st.session_state:
             st.session_state.blocked_hosts = []
 
-        # st.sidebar.markdown(
-        #     """
-        #     <div style='text-align:center; padding: 16px 0 8px 0;'>
-        #       <span style='font-size:2rem'>🌐</span><br>
-        #       <span style='font-family:Rajdhani; font-size:1.3rem; font-weight:700; color:#4dd8ff;
-        #                    letter-spacing:2px;'>SDN PRO CONTROLLER</span><br>
-        #       <span style='font-size:.7rem; color:#3d6fe8; letter-spacing:1px;'>REAL-TIME NETWORK DASHBOARD</span>
-        #     </div>
-        #     """,
-        #     unsafe_allow_html=True,
-        # )
-
         st.sidebar.markdown("---")
 
         metrics = self.loader.load_metrics()

@@ -313,24 +313,6 @@ class Dashboard:
         return fig
 
     @staticmethod
-    def render_kpi_cards(total_pkts, accepted, dropped, acc_rate, avg_lat):
-        k1, k2, k3, k4, k5 = st.columns(5)
-        for col, val, lbl in [
-            (k1, total_pkts, "TOTAL FLOWS"),
-            (k2, accepted, "ACCEPTED"),
-            (k3, dropped, "BLOCKED"),
-            (k4, f"{acc_rate}%", "ACCEPTANCE RATE"),
-            (k5, f"{avg_lat} ms", "AVG LATENCY"),
-        ]:
-            col.markdown(
-                f"<div class='metric-card'>"
-                f"<div class='metric-val'>{val}</div>"
-                f"<div class='metric-lbl'>{lbl}</div>"
-                f"</div>",
-                unsafe_allow_html=True,
-            )
-
-    @staticmethod
     def render_baseline_vs_llm_kpis(events):
         if not events:
             st.caption("No data available for Baseline vs LLM comparison")

@@ -73,8 +73,7 @@ class SDNExperiment:
     """
 
     def __init__(self, runtime: int = DEFAULT_RUNTIME,
-                 api_key: str = DEFAULT_API_KEY,
-                 model: str = ''):
+                 api_key: str = DEFAULT_API_KEY):
         self.runtime      = runtime
         self.net          = None
         self.stop_event   = threading.Event()
