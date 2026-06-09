@@ -6,6 +6,23 @@ M.Sc. in Computer Science — University of Trento.
 This project adds an LLM as a **northbound control intelligence layer** on top of a RYU SDN controller.
 The model receives compact network state snapshots and decides how to steer traffic and handle anomalies.
 
+## Table of contents
+
+- [Dashboard](#dashboard)
+- [What the system does](#what-the-system-does)
+- [Deployment architecture](#deployment-architecture)
+- [High-level software architecture](#high-level-software-architecture)
+- [Repository structure](#repository-structure)
+- [Quick start](#quick-start)
+- [LLM loop behavior](#llm-loop-behavior)
+- [Outputs and observability](#outputs-and-observability)
+- [Notes](#notes)
+- [Technologies](#technologies)
+
+## Dashboard
+
+![SDN Network Controller Dashboard](docs/dashboard.png)
+
 ## What the system does
 
 The platform runs on Mininet + Open vSwitch + RYU and uses the LLM for three tasks:
@@ -78,30 +95,49 @@ OVS switches + Mininet hosts
 | `network/trafficManager.py` | Random traffic generation + LLM-driven slice installation |
 | `network/ryuController.py` | RYU REST wrapper |
 | `network/metricStore.py` | Thread-safe metrics and persistence |
-| `network/templates/*.j2` | Jinja2 prompt templates |
+| `network/templates/system.j2` | System prompt (role, constraints) |
+| `network/templates/slice_intent.j2` | Slice assignment prompt |
+| `network/templates/slice_intent_delta.j2` | Slice assignment prompt (delta-state variant) |
+| `network/templates/anomaly_intent.j2` | Anomaly classification prompt |
+| `network/templates/fix_intent.j2` | Remediation action prompt |
+| `network/templates/query_user.j2` | User-initiated query prompt |
 | `gui/Dashboard.py` | Streamlit dashboard entrypoint |
-| `gui/SidebarManager.py` | Host security controls (isolate/unblock) |
+| `gui/SidebarManager.py` | Host security controls (isolate/unblock) and link management |
+| `gui/Visualizer.py` | Network topology graph rendering |
+| `gui/DataLoader.py` | Metrics and topology JSON loader |
+| `gui/SDNController.py` | GUI action queue client (enqueue/result polling) |
+| `gui/config.py` | Path resolution and environment variable loading |
 
 ## Quick start
 
 ### 1) Prerequisites
 
-**Multipass VM (Ubuntu guest)**
+The experiment engine (Mininet + RYU) must run on Linux. The Streamlit dashboard can run on any OS.
+
+| Setup | When to use |
+|---|---|
+| **macOS / Windows host + Multipass VM** | Development on a non-Linux machine (recommended) |
+| **Native Linux** | Run everything locally — no VM needed |
+
+**Experiment machine (Linux / Multipass VM)**
 - Python 3.8+
 - Mininet + Open vSwitch
 - RYU SDN framework (`pip install ryu`)
 
-**macOS host**
+**Dashboard machine (macOS / Windows / Linux host)**
 - Python 3.8+
-- Multipass
 - OpenAI API key
+- Multipass (only if using the VM approach)
 
-### 2) Mount the project directory into the VM
+### 2) Share the project directory
 
+**macOS / Windows — mount into the VM:**
 ```bash
-# Run on the macOS host — replace <vm-name> with your Multipass VM name
+# Replace <vm-name> with your Multipass VM name
 multipass mount /path/to/LLMIntent <vm-name>:/home/ubuntu/LLMIntent
 ```
+
+**Native Linux — no mount needed:** clone the repo on the same machine and run both the experiment and the dashboard from the same directory.
 
 This gives the VM write access to `network/data/`, which the dashboard reads directly on the host.
 
@@ -135,9 +171,11 @@ To find the VM IP: `multipass info <vm-name>`. The IP may change on restart — 
 
 Useful optional settings:
 
+- `OPENAI_MODEL` (default: `gpt-4.1-mini`)
 - `NUM_SWITCHES`, `NUM_HOSTS`
-- `REFRESH_SEC`
-- `ADD_URL`, `DEL_URL` (explicit RYU REST endpoints)
+- `ANOMALY_CHECK_INTERVAL` (seconds between monitoring cycles, default: 30)
+- `REFRESH_SEC` (dashboard refresh rate, default: 1)
+- `ADD_URL`, `DEL_URL` (explicit RYU REST endpoint overrides)
 
 ### 5) Run the experiment
 
@@ -167,12 +205,12 @@ streamlit run gui/Dashboard.py
 
 1. Build anomaly signals (drop rate, latency stats, flow growth, etc.).
 2. Ask the model for anomaly classification.
-3. If anomaly is actionable, request remediation (`block_host` or `none`).
-4. Apply fix through RYU REST and log decision metadata.
+3. If anomaly is actionable, request remediation action (`block_host`, `set_link_tc`, `add_link`, `remove_link`, or `none`).
+4. Apply fix through RYU REST / Mininet and log decision metadata.
 
 ## Outputs and observability
 
-All runtime files are written to `network/data/` (gitignored):
+All runtime files are written to `network/data/`:
 
 | File | Content |
 |---|---|
@@ -190,7 +228,8 @@ Dashboard sections:
 ## Notes
 
 - Keep secrets only in `.env` (gitignored).
-- The VM IP may change on restart — update `RYU_REST_URL`, `ADD_URL`, `DEL_URL` in `.env` with the output of `multipass info <vm-name>`.
+- **Multipass**: the VM IP may change on restart — run `multipass info <vm-name>` and update `VM_IP` in `.env`. All RYU URLs are derived from it automatically.
+- **Native Linux**: leave `VM_IP=127.0.0.1` (the default).
 - If Mininet is left dirty, run on the VM:
 
 ```bash
