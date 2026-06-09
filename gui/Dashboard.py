@@ -22,6 +22,16 @@ class Dashboard:
         st.markdown("""
         <style>
           .stApp { background: #0a0e1a; }
+          header[data-testid="stHeader"] { display: none; }
+          .stAppViewBlockContainer { padding-top: 0.5rem !important; }
+          section[data-testid="stSidebar"],
+          section[data-testid="stSidebar"] > div,
+          section[data-testid="stSidebar"] > div > div,
+          [data-testid="stSidebarContent"],
+          [data-testid="stSidebarUserContent"] { padding-top: 0.5rem !important; margin-top: 0 !important; }
+          [data-testid="stSidebarNav"] { display: none !important; }
+          [data-testid="stSidebarCollapseButton"] { display: none !important; }
+          .block-container { padding-top: 0.5rem !important; }
                     .compare-btn-wrap { margin: 2px 0 12px 0; }
                     .compare-btn-wrap button {
                         min-height: 52px;
@@ -277,11 +287,19 @@ class Dashboard:
         }
         
         .host-table tr.err:hover {
-        
+
             background-color: rgba(232,61,61,.08);
-        
+
         }
         </style>
+        <script>
+        (function keepSidebarOpen() {
+            var doc = window.parent.document;
+            var btn = doc.querySelector('[data-testid="stSidebarCollapsedControl"] button');
+            if (btn) { btn.click(); return; }
+            setTimeout(keepSidebarOpen, 300);
+        })();
+        </script>
         """, unsafe_allow_html=True)
 
     def __init__(self):
@@ -1002,7 +1020,7 @@ class Dashboard:
 
             active_pkts = [(e["src"], e["dst"]) for e in events[:3]] if events else []
             fig = self.vis.draw_topology(G, st.session_state.blocked_hosts, None, active_pkts)
-            st.pyplot(fig, width='stretch')
+            st.pyplot(fig, use_container_width=True)
             plt.close(fig)
 
         with col_events:
