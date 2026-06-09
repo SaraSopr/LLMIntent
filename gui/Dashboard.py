@@ -1,3 +1,5 @@
+import base64
+import io
 import time
 import json
 from datetime import datetime
@@ -22,16 +24,14 @@ class Dashboard:
         st.markdown("""
         <style>
           .stApp { background: #0a0e1a; }
-          header[data-testid="stHeader"] { display: none; }
-          .stAppViewBlockContainer { padding-top: 0.5rem !important; }
-          section[data-testid="stSidebar"],
-          section[data-testid="stSidebar"] > div,
-          section[data-testid="stSidebar"] > div > div,
-          [data-testid="stSidebarContent"],
-          [data-testid="stSidebarUserContent"] { padding-top: 0.5rem !important; margin-top: 0 !important; }
+          html { scrollbar-gutter: stable; }
+          header[data-testid="stHeader"] { background: #0a0e1a !important; border-bottom: none !important; box-shadow: none !important; }
+          [data-testid="stToolbar"] { visibility: hidden; }
+          .stAppViewBlockContainer { padding-top: 0rem !important; }
           [data-testid="stSidebarNav"] { display: none !important; }
           [data-testid="stSidebarCollapseButton"] { display: none !important; }
-          .block-container { padding-top: 0.5rem !important; }
+          section[data-testid="stSidebar"] > div:first-child { padding-top: 0.25rem !important; }
+
                     .compare-btn-wrap { margin: 2px 0 12px 0; }
                     .compare-btn-wrap button {
                         min-height: 52px;
@@ -1020,8 +1020,16 @@ class Dashboard:
 
             active_pkts = [(e["src"], e["dst"]) for e in events[:3]] if events else []
             fig = self.vis.draw_topology(G, st.session_state.blocked_hosts, None, active_pkts)
-            st.pyplot(fig, use_container_width=True)
+            buf = io.BytesIO()
+            fig.savefig(buf, format="png", bbox_inches="tight",
+                        facecolor=fig.get_facecolor(), dpi=90)
             plt.close(fig)
+            img_b64 = base64.b64encode(buf.getvalue()).decode()
+            st.markdown(
+                f'<img src="data:image/png;base64,{img_b64}" '
+                f'style="width:100%;height:auto;display:block;"/>',
+                unsafe_allow_html=True,
+            )
 
         with col_events:
             self.render_live_event_feed(events)
