@@ -48,7 +48,7 @@ class Dashboard:
           }
           .metric-lbl {
             font-size: 0.78rem;
-            color: #6a8aac;
+            color: #c8d8f0;
             text-transform: uppercase;
             letter-spacing: 1.5px;
             margin-top: 4px;
@@ -89,7 +89,7 @@ class Dashboard:
                         justify-content:space-between;
                         align-items:center;
                         font-size:.78rem;
-                        color:#9bb3d1;
+                        color:#ddeeff;
                         margin-bottom:6px;
                         letter-spacing:.5px;
                     }
@@ -144,13 +144,103 @@ class Dashboard:
                     }
                     .cmp-lbl {
                         font-size:.66rem;
-                        color:#8fa7c6;
+                        color:#c8d8f0;
                         text-transform:uppercase;
                         letter-spacing:1px;
                         margin-top:2px;
                     }
           [data-testid="stSidebar"] { background: #080c18 !important; border-right: 1px solid #1e3a5f; }
-          
+          section[data-testid="stSidebar"] > div:first-child { padding-top: 0.25rem !important; }
+
+          /* ── Sidebar form controls ───────────────────────────────────── */
+          /* All widget labels → white, uppercase, tight tracking */
+          [data-testid="stSidebar"] label {
+            color: #ddeeff !important;
+            font-size: .72rem !important;
+            font-weight: 700 !important;
+            letter-spacing: .9px;
+            text-transform: uppercase;
+            margin-bottom: 3px !important;
+          }
+          /* Checkbox label stays sentence-case (it IS the text, not a field heading) */
+          [data-testid="stSidebar"] [data-testid="stCheckbox"] label {
+            align-items: center !important;
+          }
+          [data-testid="stSidebar"] [data-testid="stCheckbox"] label,
+          [data-testid="stSidebar"] [data-testid="stCheckbox"] span,
+          [data-testid="stSidebar"] [data-testid="stCheckbox"] p,
+          [data-testid="stSidebar"] [data-testid="stCheckbox"] div {
+            color: #ddeeff !important;
+            text-transform: none !important;
+            font-size: .82rem !important;
+            letter-spacing: .1px;
+            font-weight: 600 !important;
+          }
+          /* Selectbox trigger: dark bg + blue border + rounded corners */
+          [data-testid="stSidebar"] [data-baseweb="select"] > div:first-child {
+            background: #0d1827 !important;
+            border: 1px solid #2a5485 !important;
+            border-radius: 8px !important;
+          }
+          /* Selectbox selected value and placeholder text → white */
+          [data-testid="stSidebar"] [data-baseweb="select"] span,
+          [data-testid="stSidebar"] [data-baseweb="select"] div,
+          [data-testid="stSidebar"] [data-baseweb="single-select-value"],
+          [data-testid="stSidebar"] [data-baseweb="select"] [role="combobox"] {
+            color: #ffffff !important;
+          }
+          /* Dropdown chevron → accent colour */
+          [data-testid="stSidebar"] [data-baseweb="select"] svg { fill: #4dd8ff !important; }
+          /* Text and number inputs: the visible border lives on baseweb's wrapper, not <input> */
+          [data-testid="stSidebar"] [data-baseweb="base-input"] {
+            background: #0d1827 !important;
+            border: 1px solid #2a5485 !important;
+            border-radius: 8px !important;
+          }
+          [data-testid="stSidebar"] [data-baseweb="base-input"] input {
+            color: #ffffff !important;
+            background: transparent !important;
+            caret-color: #4dd8ff !important;
+          }
+          /* Focus glow instead of Streamlit's default white ring */
+          [data-testid="stSidebar"] [data-baseweb="base-input"]:focus-within {
+            border-color: #4dd8ff !important;
+            box-shadow: 0 0 0 2px rgba(77,216,255,0.18) !important;
+            outline: none !important;
+          }
+          /* Sidebar action buttons: uniform height + no text wrapping */
+          [data-testid="stSidebar"] [data-testid="stButton"] button {
+            min-height: 42px !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+          }
+          /* Number input +/- buttons */
+          [data-testid="stSidebar"] .stNumberInput button {
+            background: #0d1827 !important;
+            border-color: #2a5485 !important;
+            color: #4dd8ff !important;
+          }
+          /* Dropdown option list — rendered in a portal OUTSIDE the sidebar DOM,
+             so we target the baseweb popover globally (no sidebar prefix). */
+          [data-baseweb="popover"] ul,
+          [data-baseweb="menu"] {
+            background: #0d1827 !important;
+            border: 1px solid #2a5485 !important;
+            border-radius: 8px !important;
+          }
+          [data-baseweb="popover"] li[role="option"],
+          li[role="option"] {
+            color: #ddeeff !important;
+            background: #0d1827 !important;
+            font-size: .88rem !important;
+          }
+          [data-baseweb="popover"] li[role="option"]:hover,
+          li[role="option"]:hover,
+          li[aria-selected="true"] {
+            background: rgba(77,216,255,0.14) !important;
+            color: #4dd8ff !important;
+          }
+
         .host-table {
         
             width: 100%;
@@ -348,7 +438,7 @@ class Dashboard:
             f"""
             <div class='cmp-wrap'>
                 <div class='cmp-head'>
-                    <span>Accordo LLM vs Baseline</span>
+                    <span>Agreement LLM vs Baseline</span>
                     <span>{agree_rate}%</span>
                 </div>
                 <div class='cmp-track'>
@@ -393,7 +483,7 @@ class Dashboard:
                 unsafe_allow_html=True,
             )
 
-        st.caption("Baseline used in comparison: ICMP → Slice 1, TCP/UDP → Slice 2")
+        st.markdown("<span style='color:white; font-size:.8rem;'>Baseline used in comparison: ICMP → Slice 1, TCP/UDP → Slice 2</span>", unsafe_allow_html=True)
 
     @staticmethod
     def render_live_event_feed(events):
@@ -629,8 +719,7 @@ class Dashboard:
                 unsafe_allow_html=True,
             )
 
-            # ── AGGIUNGI QUESTI METODI ALLA CLASSE Dashboard ──────────────────────────────
-
+          
     @staticmethod
     def render_llm_activity(llm_logs: list):
         """Render LLM call log with slice, anomaly and fix decisions."""
@@ -816,7 +905,7 @@ class Dashboard:
                 "error": error,
             })
 
-        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
 
     @staticmethod
     def _infer_blocked_hosts_from_flows(topo_data, flow_table):
@@ -861,14 +950,17 @@ class Dashboard:
 
         metrics_data = self.loader.load_metrics()
 
-        if "blocked_hosts" not in st.session_state:
-            st.session_state.blocked_hosts = []
+        if "pending_blocked" not in st.session_state:
+            st.session_state.pending_blocked = set()
 
         flow_table = (metrics_data or {}).get("flow_table", [])
-        inferred_blocked = self._infer_blocked_hosts_from_flows(topo_data, flow_table)
-        st.session_state.blocked_hosts = sorted(
-            set(st.session_state.blocked_hosts) | set(inferred_blocked)
-        )
+        inferred_blocked = set(self._infer_blocked_hosts_from_flows(topo_data, flow_table))
+
+        # remove from pending once the drop rule appears in the flow table
+        st.session_state.pending_blocked -= inferred_blocked
+
+        # source of truth = flow table; pending_blocked covers the lag after a manual block
+        st.session_state.blocked_hosts = sorted(inferred_blocked | st.session_state.pending_blocked)
 
         sidebar = SidebarManager(topo_data, self.controller, self.loader, REFRESH_SEC)
         sidebar.host_controls()

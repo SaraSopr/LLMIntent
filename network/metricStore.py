@@ -1,12 +1,13 @@
 """
 metricStore.py — Thread-safe metrics store for the SDN experiment.
-Written to metrics.json for the GUI to consume.
+Written to network/data/metrics.json for the GUI to consume.
 """
 
 import json
 import time
 import threading
 from collections import deque
+from pathlib import Path
 
 METRICS_FILE  = "metrics.json"
 MAX_EVENTS    = 200
@@ -86,7 +87,9 @@ class MetricsStore:
     def persist(self, filepath: str = METRICS_FILE):
         snap = self.snapshot()
         try:
-            with open(filepath, "w") as f:
+            p = Path(filepath)
+            p.parent.mkdir(parents=True, exist_ok=True)
+            with open(p, "w") as f:
                 json.dump(snap, f, indent=4)
         except Exception as e:
             print(f"[⚠️] Error writing metrics: {e}")

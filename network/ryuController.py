@@ -6,7 +6,11 @@ import os
 import requests
 from typing import Optional
 
-RYU_REST = os.getenv("RYU_REST_URL", "http://127.0.0.1:8080")
+_VM_IP    = os.getenv("VM_IP", "127.0.0.1")
+_RYU_PORT = os.getenv("RYU_REST_PORT", "8080")
+RYU_REST  = os.getenv("RYU_REST_URL", f"http://{_VM_IP}:{_RYU_PORT}")
+
+_PROTO_MAP = {"ICMP": 1, "TCP": 6, "UDP": 17}
 
 
 class RyuController:
@@ -51,13 +55,14 @@ class RyuController:
         except Exception:
             return {}
 
-    def get_network_state(self, num_switches: int) -> dict:
+    def get_network_state(self, num_switches: int, flows: list = None) -> dict:
         """
         Build a compact network state snapshot suitable for LLM consumption.
         Includes switches, flows, and port stats.
         """
         switches = self.get_switches()
-        flows    = self.get_flows(num_switches)
+        if flows is None:
+            flows = self.get_flows(num_switches)
 
         port_stats = {}
         for dpid in range(1, num_switches + 1):
@@ -77,7 +82,7 @@ class RyuController:
     def install_flow(self, dpid: int, port: int,
                      src_mac: str = None, dst_mac: str = None,
                      priority: int = 100, queue_id: int = 0,
-                     in_port: int = None):
+                     in_port: int = None, protocol: str = None):
         """
         Install a flow rule on a switch.
         queue_id: 0 = default, 1 = high-priority slice, 2 = high-throughput slice
@@ -89,6 +94,9 @@ class RyuController:
             match["eth_src"] = src_mac
         if dst_mac:
             match["eth_dst"] = dst_mac
+        if protocol and protocol.upper() in _PROTO_MAP:
+            match["eth_type"] = 0x0800
+            match["ip_proto"] = _PROTO_MAP[protocol.upper()]
 
         actions = []
         if queue_id > 0:
@@ -96,10 +104,11 @@ class RyuController:
         actions.append({"type": "OUTPUT", "port": int(port)})
 
         flow = {
-            "dpid":     dpid,
-            "priority": priority,
-            "match":    match,
-            "actions":  actions,
+            "dpid":         dpid,
+            "priority":     priority,
+            "idle_timeout": 30,
+            "match":        match,
+            "actions":      actions,
         }
         try:
             r = requests.post(

@@ -4,13 +4,14 @@ NetworksGenerator — Mininet topology builder with extended JSON metadata.
 Generates topology.json consumed by the GUI and the SDN experiment engine.
 
 Slices:
-  Queue 1 → High-priority slice (ICMP, interactive) — min 8 Mbps
-  Queue 2 → Low-priority slice  (TCP/UDP bulk)      — min 2 Mbps
+  Queue 1 → High-priority slice (ICMP, interactive)  — min 8 Mbps
+  Queue 2 → High-throughput slice (TCP/UDP bulk)      — min 2 Mbps
 """
 
 import json
 import random
 import subprocess
+from pathlib import Path
 from mininet.topo import Topo
 
 SLICE_CONFIG = {
@@ -87,7 +88,9 @@ class NetworksGenerator(Topo):
             self.switch_ports[target_s] += 1
 
         # ── Persist ───────────────────────────────────────────────────────
-        with open("topology.json", "w") as f:
+        topo_path = Path(__file__).resolve().parent / "data" / "topology.json"
+        topo_path.parent.mkdir(exist_ok=True)
+        with open(topo_path, "w") as f:
             json.dump(self.topo_data, f, indent=4)
         print("✅ topology.json generated with MAC, IP, ports and link metadata.")
 

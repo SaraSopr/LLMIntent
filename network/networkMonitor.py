@@ -13,9 +13,11 @@ from metricStore   import MetricsStore
 from ryuController import RyuController
 from llmClient     import LLMClient
 
-TOPOLOGY_FILE = "topology.json"
-GUI_ACTIONS_FILE = os.getenv("GUI_ACTIONS_FILE", "network/gui_actions.jsonl")
-GUI_ACTIONS_RESULTS_FILE = os.getenv("GUI_ACTIONS_RESULTS_FILE", "network/gui_actions_results.jsonl")
+_SCRIPT_DIR = Path(__file__).resolve().parent
+_DATA_DIR   = _SCRIPT_DIR / "data"
+TOPOLOGY_FILE = str(_DATA_DIR / "topology.json")
+GUI_ACTIONS_FILE = os.getenv("GUI_ACTIONS_FILE", str(_DATA_DIR / "gui_actions.jsonl"))
+GUI_ACTIONS_RESULTS_FILE = os.getenv("GUI_ACTIONS_RESULTS_FILE", str(_DATA_DIR / "gui_actions_results.jsonl"))
 
 
 class NetworkMonitor:
@@ -53,16 +55,16 @@ class NetworkMonitor:
     def monitor_blocked_traffic(self):
         while not self.stop_event.is_set():
             self._process_gui_actions()
-            self._check_drops()
-            self._refresh_flow_table()
-            self._maybe_check_anomalies()
+            flows = self.ryu.get_flows(self.num_switches)
+            self._check_drops(flows)
+            self._refresh_flow_table(flows)
+            self._maybe_check_anomalies(flows)
             time.sleep(2)
 
     # ── PRIVATE ───────────────────────────────────────────────────────────────
 
-    def _check_drops(self):
+    def _check_drops(self, flows: list):
         try:
-            flows = self.ryu.get_flows(self.num_switches)
             for flow in flows:
                 if flow.get("priority") != 65535:
                     continue
@@ -80,24 +82,23 @@ class NetworkMonitor:
         except Exception as e:
             print(f"[⚠️] _check_drops error: {e}")
 
-    def _refresh_flow_table(self):
-        flows = self.ryu.get_flows(self.num_switches)
-        flows.sort(key=lambda f: f.get("duration_sec", 0))
-        self.metrics.update_flows(flows)
+    def _refresh_flow_table(self, flows: list):
+        sorted_flows = sorted(flows, key=lambda f: f.get("duration_sec", 0))
+        self.metrics.update_flows(sorted_flows)
         self.metrics.persist()
 
-    def _maybe_check_anomalies(self):
+    def _maybe_check_anomalies(self, flows: list):
         """Periodically ask the LLM to detect anomalies and apply fixes."""
         now = time.time()
         if now - self._last_anomaly_check < self.anomaly_check_interval:
             return
 
         self._last_anomaly_check = now
-        network_state = self.ryu.get_network_state(self.num_switches)
+        network_state = self.ryu.get_network_state(self.num_switches, flows=flows)
         snapshot = self.metrics.snapshot()
         network_state["node_stats"] = snapshot.get("node_stats", {})
 
-        signals = self._build_anomaly_signals(network_state, snapshot)
+        signals = self._build_anomaly_signals(network_state, snapshot, flows)
         network_state["anomaly_signals"] = signals
 
         heuristic_result = self._heuristic_anomaly_decision(signals)
@@ -115,7 +116,7 @@ class NetworkMonitor:
         else:
             print("[🤖 LLM] No anomaly detected.")
 
-    def _build_anomaly_signals(self, network_state: dict, snapshot: dict) -> dict:
+    def _build_anomaly_signals(self, network_state: dict, snapshot: dict, flows: list) -> dict:
         events = snapshot.get("events", [])[:40]
         total_events = len(events)
         dropped = sum(1 for e in events if not e.get("accepted"))
@@ -135,12 +136,9 @@ class NetworkMonitor:
         tcp_lat = [float(e.get("latency_ms", 0) or 0) for e in events if str(e.get("proto", "")).upper() == "TCP"]
         udp_lat = [float(e.get("latency_ms", 0) or 0) for e in events if str(e.get("proto", "")).upper() == "UDP"]
 
-        flows = network_state.get("flows", []) or []
-
-        all_flows = self.ryu.get_flows(self.num_switches)
         blocked_hosts = sorted({
             self._mac_to_host(str(f.get("match", {}).get("eth_src", "")))
-            for f in all_flows
+            for f in flows
             if int(f.get("priority", 0) or 0) == 65535
             and str(f.get("match", {}).get("eth_src", "")).strip()
         })

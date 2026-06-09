@@ -21,7 +21,35 @@ The platform runs on Mininet + Open vSwitch + RYU and uses the LLM for three tas
 | Slice 1 | Queue 1 | Low latency / high priority | ICMP, interactive |
 | Slice 2 | Queue 2 | High throughput / bulk | TCP, UDP |
 
-## High-level architecture
+## Deployment architecture
+
+The system is split across two machines:
+
+| Component | Host |
+|---|---|
+| Mininet + OVS + RYU + experiment engine | **Multipass VM** (Ubuntu guest) |
+| Streamlit dashboard | **macOS host** |
+
+The project directory is shared via **Multipass mount**. Runtime files written by the experiment (`network/data/`) are read directly by the dashboard on the host without any network transfer.
+
+```
+┌─────────────────────────────┐      ┌──────────────────────────────────┐
+│        macOS host           │      │        Multipass VM (Ubuntu)     │
+│                             │      │                                  │
+│  streamlit run gui/         │      │  sudo python3                    │
+│    Dashboard.py             │      │    network/networkGeneration.py  │
+│         │                   │      │         │                        │
+│         │ read              │      │         │ write                  │
+│         ▼                   │      │         ▼                        │
+│   network/data/  ◄──────────┼──────┼── network/data/                 │
+│  (Multipass mount)          │      │  (shared filesystem)             │
+│         │                   │      │                                  │
+│         │   RYU REST API    │      │                                  │
+│         └───────────────────┼─────►│  :8080                          │
+└─────────────────────────────┘      └──────────────────────────────────┘
+```
+
+## High-level software architecture
 
 ```text
 LLM (OpenAI Responses API)
@@ -58,52 +86,70 @@ OVS switches + Mininet hosts
 
 ### 1) Prerequisites
 
-- Python **3.8+**
+**Multipass VM (Ubuntu guest)**
+- Python 3.8+
 - Mininet + Open vSwitch
-- RYU SDN framework
+- RYU SDN framework (`pip install ryu`)
+
+**macOS host**
+- Python 3.8+
+- Multipass
 - OpenAI API key
-- (Optional) Vagrant/VirtualBox if running in a VM
 
-### 2) Install dependencies
+### 2) Mount the project directory into the VM
 
+```bash
+# Run on the macOS host — replace <vm-name> with your Multipass VM name
+multipass mount /path/to/LLMIntent <vm-name>:/home/ubuntu/LLMIntent
+```
+
+This gives the VM write access to `network/data/`, which the dashboard reads directly on the host.
+
+### 3) Install dependencies
+
+**On the VM:**
+```bash
+pip install openai requests jinja2
+```
+
+**On the macOS host:**
 ```bash
 pip install openai requests jinja2 streamlit matplotlib plotly pandas networkx
 ```
 
-### 3) Configure environment
+### 4) Configure environment
 
 ```bash
 cp .env.example .env
 ```
 
-Minimum `.env` values:
+Key `.env` values:
 
 ```env
 OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-4.1-mini
-RYU_REST_URL=http://127.0.0.1:8080
-GUI_VM_IP=192.168.64.8
+VM_IP=<vm-ip>          # single source of truth — all RYU URLs are derived from this
 EXPERIMENT_RUNTIME=120
 ```
+
+To find the VM IP: `multipass info <vm-name>`. The IP may change on restart — `VM_IP` is the only value you need to update.
 
 Useful optional settings:
 
 - `NUM_SWITCHES`, `NUM_HOSTS`
 - `REFRESH_SEC`
-- `LLM_CALLS_LOG_FILE`
-- `ADD_URL`, `DEL_URL` (explicit GUI endpoints)
+- `ADD_URL`, `DEL_URL` (explicit RYU REST endpoints)
 
-### 4) Run the experiment
+### 5) Run the experiment
 
-From project root:
+**On the VM**, from the project root:
 
 ```bash
 sudo python3 network/networkGeneration.py
 ```
 
-### 5) Run the dashboard
+### 6) Run the dashboard
 
-In a separate terminal:
+**On the macOS host**, from the project root:
 
 ```bash
 streamlit run gui/Dashboard.py
@@ -126,18 +172,26 @@ streamlit run gui/Dashboard.py
 
 ## Outputs and observability
 
-- Runtime metrics: `network/metrics.json`
-- Model-call audit log: `network/llm_calls.jsonl`
-- Dashboard sections:
-  - topology and host isolation state
-  - baseline vs LLM comparison
-  - LLM activity and raw latest call details
+All runtime files are written to `network/data/` (gitignored):
+
+| File | Content |
+|---|---|
+| `network/data/metrics.json` | Live traffic metrics read by the dashboard |
+| `network/data/topology.json` | Network topology generated at startup |
+| `network/data/llm_calls.jsonl` | Full audit log of every LLM call |
+| `network/data/gui_actions.jsonl` | Actions queued from the GUI |
+| `network/data/gui_actions_results.jsonl` | Execution results of GUI actions |
+
+Dashboard sections:
+- topology and host isolation state
+- baseline vs LLM comparison
+- LLM activity and raw latest call details
 
 ## Notes
 
-- Keep secrets only in `.env`.
-- `.env` and `.idea/` are git-ignored.
-- If Mininet is left dirty, run:
+- Keep secrets only in `.env` (gitignored).
+- The VM IP may change on restart — update `RYU_REST_URL`, `ADD_URL`, `DEL_URL` in `.env` with the output of `multipass info <vm-name>`.
+- If Mininet is left dirty, run on the VM:
 
 ```bash
 sudo mn -c
@@ -147,6 +201,7 @@ sudo mn -c
 
 - SDN: RYU, OpenFlow 1.3, Open vSwitch
 - Emulation: Mininet
+- Virtualisation: Multipass (Ubuntu VM on macOS)
 - LLM: OpenAI Responses API
 - UI: Streamlit
 - Prompting: Jinja2 templates

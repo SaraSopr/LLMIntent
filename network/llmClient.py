@@ -39,8 +39,8 @@ OPENAI_KEY = os.getenv("OPENAI_API_KEY", "")
 SLICE_CACHE_TTL_S = float(os.getenv("SLICE_CACHE_TTL_S", "4"))
 FULL_STATE_REFRESH_EVERY = int(os.getenv("LLM_FULL_STATE_REFRESH_EVERY", "0"))
 SLICE_RECENT_FLOWS_LIMIT = int(os.getenv("SLICE_RECENT_FLOWS_LIMIT", "3"))
-LLM_CALLS_LOG_FILE = os.getenv("LLM_CALLS_LOG_FILE", "network/llm_calls.jsonl")
-TOPOLOGY_FILE = os.getenv("TOPOLOGY_FILE", "topology.json")
+LLM_CALLS_LOG_FILE = os.getenv("LLM_CALLS_LOG_FILE", "data/llm_calls.jsonl")
+TOPOLOGY_FILE = os.getenv("TOPOLOGY_FILE", "network/data/topology.json")
 FIX_DEMO_MODE = os.getenv("FIX_DEMO_MODE", "").strip().lower()
 
 
@@ -84,6 +84,9 @@ class LLMClient:
         self.fix_demo_mode = FIX_DEMO_MODE
         self._fix_demo_cycle_idx = 0
         self.calls_log_file = self._resolve_calls_log_file(LLM_CALLS_LOG_FILE)
+        self._topo_cache_path: Optional[Path] = None
+        self._topo_cache_mtime: Optional[float] = None
+        self._topo_cache_result = None
 
     # ── PUBLIC API ────────────────────────────────────────────────────────────
 
@@ -452,6 +455,7 @@ class LLMClient:
 
         candidates = [
             env_path,
+            root / "network" / "data" / "topology.json",
             root / "network" / "topology.json",
             root / "topology.json",
         ]
@@ -492,6 +496,12 @@ class LLMClient:
             if not path.exists():
                 return {"switches": [], "switch_links": [], "host_uplinks": {}}, "missing"
 
+            mtime = path.stat().st_mtime
+            if (self._topo_cache_path == path
+                    and self._topo_cache_mtime == mtime
+                    and self._topo_cache_result is not None):
+                return self._topo_cache_result
+
             topo = json.loads(path.read_text(encoding="utf-8"))
             switches = sorted([str(s) for s in topo.get("switches", [])])
 
@@ -530,6 +540,9 @@ class LLMClient:
             }
             sig_raw = json.dumps(summary, separators=(",", ":"), sort_keys=True)
             sig = hashlib.sha1(sig_raw.encode("utf-8")).hexdigest()[:12]
+            self._topo_cache_path = path
+            self._topo_cache_mtime = mtime
+            self._topo_cache_result = (summary, sig)
             return summary, sig
         except Exception:
             return {"switches": [], "switch_links": [], "host_uplinks": {}}, "error"
@@ -762,7 +775,7 @@ class LLMClient:
         path = Path(path_value)
         if path.is_absolute():
             return path
-        return Path(__file__).resolve().parents[1] / path
+        return Path(__file__).resolve().parent / path
 
     def _append_model_call_log(self, payload: dict):
         entry = {

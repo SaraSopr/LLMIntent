@@ -11,3 +11,8 @@ __pycache__/
 # IDE
 .idea/
 .vscode/
+
+# Runtime-generated experiment files
+network/data/
+topology.json
+metrics.json

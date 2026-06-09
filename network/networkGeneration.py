@@ -4,7 +4,7 @@ networkGeneration.py — SDN Experiment Engine
 Architecture:
   MetricsStore     — thread-safe metrics & JSON persistence
   RyuController    — RYU REST API wrapper
-  LLMClient        — Ollama/Groq/OpenAI northbound interface
+  LLMClient        — OpenAI northbound interface
   TrafficManager   — traffic generation + LLM-driven slice assignment
   NetworkMonitor   — drop detection + LLM anomaly detection
   SDNExperiment    — orchestrator (Mininet setup, thread management)
@@ -52,10 +52,17 @@ def _load_dotenv():
 _load_dotenv()
 
 # ── CONFIG ────────────────────────────────────────────────────────────────────
-METRICS_FILE = os.getenv("METRICS_FILE", "metrics.json")
-LLM_CALLS_LOG_FILE = os.getenv("LLM_CALLS_LOG_FILE", "network/llm_calls.jsonl")
-GUI_ACTIONS_FILE = os.getenv("GUI_ACTIONS_FILE", "network/gui_actions.jsonl")
-GUI_ACTIONS_RESULTS_FILE = os.getenv("GUI_ACTIONS_RESULTS_FILE", "network/gui_actions_results.jsonl")
+_SCRIPT_DIR = Path(__file__).resolve().parent  # always ROOT/network/ regardless of cwd
+
+def _resolve_path(env_key: str, default: str) -> str:
+    raw = os.getenv(env_key, default)
+    p = Path(raw)
+    return str(p if p.is_absolute() else _SCRIPT_DIR / p)
+
+METRICS_FILE          = _resolve_path("METRICS_FILE",          "data/metrics.json")
+LLM_CALLS_LOG_FILE    = _resolve_path("LLM_CALLS_LOG_FILE",    "data/llm_calls.jsonl")
+GUI_ACTIONS_FILE         = _resolve_path("GUI_ACTIONS_FILE",         "data/gui_actions.jsonl")
+GUI_ACTIONS_RESULTS_FILE = _resolve_path("GUI_ACTIONS_RESULTS_FILE", "data/gui_actions_results.jsonl")
 DEFAULT_RUNTIME = int(os.getenv("EXPERIMENT_RUNTIME", "120"))
 DEFAULT_API_KEY = os.getenv("OPENAI_API_KEY", "")
 DEFAULT_NUM_SWITCHES = int(os.getenv("NUM_SWITCHES", "3"))
@@ -121,7 +128,7 @@ class SDNExperiment:
             try:
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text("")
-                print(f"[🧾] {label} azzerato: {path}")
+                print(f"[🧾] {label} cleared: {path}")
             except Exception as e:
                 print(f"[⚠️] Unable to reset {label}: {e}")
 
@@ -131,11 +138,12 @@ class SDNExperiment:
         self.num_switches = topo_obj.num_switches
         self._kill_old_processes()
         self._reset_llm_calls_log()
+        self.metrics.persist(METRICS_FILE)  # write clean state before threads start
 
         ryu_proc = self._start_ryu()
         time.sleep(3)
 
-        print("[🌐] Costruzione rete Mininet...")
+        print("[🌐] Building Mininet network...")
         self.net = Mininet(
             topo=topo_obj,
             switch=OVSKernelSwitch,
@@ -185,7 +193,7 @@ class SDNExperiment:
         try:
             time.sleep(self.runtime)
         except KeyboardInterrupt:
-            print("\n[!] Stop manuale.")
+            print("\n[!] Manual stop.")
         finally:
             self._stop_all(ryu_proc, topo_obj)
 
@@ -194,15 +202,16 @@ class SDNExperiment:
     def _stop_all(self, ryu_proc: subprocess.Popen, topo_obj):
         print("[🧹] Shutting down...")
         self.metrics.running = False
+        self.metrics.update_flows([])   # clear stale drop rules so next dashboard start is clean
         self.metrics.persist(METRICS_FILE)
         self.stop_event.set()
         ryu_proc.terminate()
         os.system("sudo pkill -9 iperf ping nc 2>/dev/null")
         if self.net:
-            self.net.stop()  # ← prima Mininet
-        NetworksGenerator.cleanup_queues()  # ← poi OVS queues
+            self.net.stop()
+        NetworksGenerator.cleanup_queues()
         cleanup()
-        print("✅ VM pulita.")
+        print("[✅] Environment clean.")
 
 # ── MAIN ──────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
