@@ -18,6 +18,7 @@ Action rules:
 	- prefer topology hostname like h1/h2/h3 (avoid MAC/IP unless hostname unavailable).
 - set_link_tc: use to reduce congestion/latency on a specific existing link.
 	- params must include node1, node2, and at least one of bw or delay.
+	- ONLY use node pairs that appear in `switch_links` in the provided state. Do NOT invent links.
 - add_link: use to propose a new direct path between two existing nodes.
 	- allowed only between switches (sX, sY).
 	- params must include node1 and node2.

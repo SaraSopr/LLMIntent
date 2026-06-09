@@ -1,4 +1,3 @@
-import streamlit as st
 import json, os
 from config import PATH_TOPO, PATH_METRICS
 
@@ -7,11 +6,10 @@ class DataLoader:
         self.topo_path = topo_path
         self.metrics_path = metrics_path
 
-    @st.cache_data(ttl=0)
-    def load_topology(_self):
+    def load_topology(self):
         """Reads the topology file."""
-        if os.path.exists(_self.topo_path):
-            with open(_self.topo_path) as f:
+        if os.path.exists(self.topo_path):
+            with open(self.topo_path) as f:
                 return json.load(f)
         return None
 

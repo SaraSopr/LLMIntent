@@ -69,23 +69,21 @@ class SidebarManager:
             col1, col2 = st.sidebar.columns(2)
             with col1:
                 if st.button("🚫 Isolate", width="stretch"):
-                    resp = self.controller.send_rule("BLOCK", dpid, port, mac)
-                    if self._ok_response(resp):
-                        st.session_state.pending_blocked.add(target_host)
-                        st.toast(f"🚫 {target_host} isolated!")
-                        st.rerun()
-                    else:
-                        st.sidebar.error(self._format_response_error(resp, "Isolation failed"))
+                    self.controller.enqueue_action(
+                        "block_host", params={}, reason="manual_gui", host=target_host
+                    )
+                    st.session_state.pending_blocked.add(target_host)
+                    st.toast(f"🚫 {target_host} isolating...")
+                    st.rerun()
 
             with col2:
                 if st.button("✅ Unblock", width="stretch"):
-                    resp = self.controller.send_rule("UNBLOCK", dpid, port, mac)
-                    if self._ok_response(resp):
-                        st.session_state.pending_blocked.discard(target_host)
-                        st.toast(f"✅ {target_host} restored!")
-                        st.rerun()
-                    else:
-                        st.sidebar.error(self._format_response_error(resp, "Unblock failed"))
+                    self.controller.enqueue_action(
+                        "unblock_host", params={}, reason="manual_gui", host=target_host
+                    )
+                    st.session_state.pending_blocked.discard(target_host)
+                    st.toast(f"✅ {target_host} unblocking...")
+                    st.rerun()
 
             if target_host in st.session_state.blocked_hosts:
                 st.sidebar.markdown(
@@ -101,35 +99,12 @@ class SidebarManager:
             blocked_count = len(st.session_state.blocked_hosts)
             if blocked_count > 0:
                 if st.sidebar.button(f"🧹 Unblock all ({blocked_count})", width="stretch"):
-                    failed = []
                     for host in list(st.session_state.blocked_hosts):
-                        host_link = next(
-                            (
-                                l for l in self.topo_data["links"]
-                                if l.get("type") == "h-s"
-                                and (l.get("node1") == host or l.get("node2") == host)
-                            ),
-                            None,
+                        self.controller.enqueue_action(
+                            "unblock_host", params={}, reason="manual_gui", host=host
                         )
-                        if not host_link:
-                            failed.append(host)
-                            continue
-
-                        resp = self.controller.send_rule(
-                            "UNBLOCK",
-                            host_link.get("dpid"),
-                            host_link.get("port"),
-                            host_link.get("mac"),
-                        )
-                        if not self._ok_response(resp):
-                            failed.append(host)
-
-                    st.session_state.pending_blocked -= (st.session_state.pending_blocked - set(failed))
-                    if failed:
-                        st.sidebar.warning(f"⚠ Partial unblock. Not restored: {', '.join(failed)}")
-                    else:
-                        st.session_state.pending_blocked.clear()
-                        st.toast("✅ All hosts have been restored")
+                    st.session_state.pending_blocked.clear()
+                    st.toast("✅ Unblocking all hosts...")
                     st.rerun()
 
         self.link_controls()
@@ -256,15 +231,3 @@ class SidebarManager:
                 st.session_state.pop("last_gui_action_id", None)
                 st.session_state.pop("last_gui_action_type", None)
 
-    @staticmethod
-    def _ok_response(resp):
-        return resp is not None and 200 <= resp.status_code < 300
-
-    @staticmethod
-    def _format_response_error(resp, prefix: str) -> str:
-        if resp is None:
-            return f"{prefix}: controller unreachable"
-        body = (resp.text or "").strip().replace("\n", " ")
-        if len(body) > 140:
-            body = body[:140] + "..."
-        return f"{prefix}: HTTP {resp.status_code}" + (f" — {body}" if body else "")

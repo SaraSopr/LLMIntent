@@ -766,8 +766,17 @@ class Dashboard:
             else:  # fix
                 action = response.get("action", "none")
                 host = response.get("host", "")
-                color = "#ff5252" if action == "block_host" else "#69f0ae"
-                label = f"🚫 BLOCK {host}" if action == "block_host" else "✓ No action"
+                params = response.get("params", {}) or {}
+                n1 = params.get("node1", "?")
+                n2 = params.get("node2", "?")
+                ACTION_DISPLAY = {
+                    "block_host":  ("#ff5252", f"🚫 BLOCK {host}"),
+                    "set_link_tc": ("#ff9800", f"⚙ TC {n1}↔{n2}"),
+                    "add_link":    ("#69f0ae", f"➕ LINK {n1}↔{n2}"),
+                    "remove_link": ("#ff9800", f"➖ LINK {n1}↔{n2}"),
+                    "none":        ("#69f0ae", "✓ No action"),
+                }
+                color, label = ACTION_DISPLAY.get(action, ("#6a8aac", f"? {action}"))
                 resp_html = (
                     f"<span style='color:{color}; font-weight:700;'>{label}</span> "
                     f"<span style='color:#6a8aac; font-size:.75rem;'>— {response.get('reason', '')}</span>"

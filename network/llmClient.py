@@ -260,11 +260,13 @@ class LLMClient:
         anomaly_signals = network_state.get("anomaly_signals", {})
         if not isinstance(anomaly_signals, dict):
             anomaly_signals = {}
+        topo_summary, _ = self._topology_summary_for_slice()
         return {
             "num_switches": network_state.get("num_switches", "?"),
             "num_flows":    network_state.get("num_flows", 0),
             "node_stats":   network_state.get("node_stats", {}),
             "anomaly_signals": anomaly_signals,
+            "switch_links": topo_summary.get("switch_links", []),
             "recent_flows": [
                 {
                     "src":     f.get("match", {}).get("eth_src") or f.get("match", {}).get("dl_src"),

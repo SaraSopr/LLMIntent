@@ -265,7 +265,6 @@ class NetworkMonitor:
 
                 self.ryu.install_drop_rule(
                     dpid=link.get("dpid"),
-                    port=link.get("port"),
                     src_mac=link.get("mac"),
                 )
                 resolved_host = link.get("node1", host_ref)
@@ -345,6 +344,20 @@ class NetworkMonitor:
                 err = result.get("error", "unknown error")
                 print(f"[⚠️] FIX remove_link failed: {err}")
                 return {"success": False, "error": err}
+
+        elif action == "unblock_host" and host_ref:
+            link = self._resolve_host_link(host_ref)
+            if link:
+                self.ryu.delete_drop_rule(
+                    dpid=link.get("dpid"),
+                    src_mac=link.get("mac"),
+                )
+                resolved_host = link.get("node1", host_ref)
+                print(f"[🔓 FIX] {resolved_host} unblocked (ref={host_ref}) — {reason}")
+                return {"success": True}
+            else:
+                print(f"[⚠️] UNBLOCK: host ref '{host_ref}' not found in topology.json")
+                return {"success": False, "error": f"host ref '{host_ref}' not found in topology.json"}
 
         elif action == "none":
             print(f"[🔧 FIX] No action required — {reason}")

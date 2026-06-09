@@ -121,12 +121,12 @@ class RyuController:
         except Exception as e:
             print(f"[⚠️] install_flow: {e}")
 
-    def install_drop_rule(self, dpid: int, port: int, src_mac: str):
+    def install_drop_rule(self, dpid: int, src_mac: str):
         """Install a high-priority drop rule to block a host."""
         flow = {
             "dpid":     dpid,
             "priority": 65535,
-            "match":    {"in_port": int(port), "eth_src": src_mac},
+            "match":    {"eth_src": src_mac},
             "actions":  [],
         }
         try:
@@ -135,7 +135,7 @@ class RyuController:
                 json=flow,
                 timeout=2,
             )
-            print(f"[🚫] Drop rule → dpid={dpid} port={port} mac={src_mac}, HTTP {r.status_code}")
+            print(f"[🚫] Drop rule → dpid={dpid} mac={src_mac}, HTTP {r.status_code}")
         except Exception as e:
             print(f"[⚠️] install_drop_rule: {e}")
 
@@ -149,6 +149,23 @@ class RyuController:
             )
         except Exception as e:
             print(f"[⚠️] delete_flow: {e}")
+
+    def delete_drop_rule(self, dpid: int, src_mac: str):
+        """Remove the priority-65535 drop rule for a host."""
+        body = {
+            "dpid":     dpid,
+            "priority": 65535,
+            "match":    {"eth_src": src_mac},
+        }
+        try:
+            r = requests.post(
+                f"{self.base_url}/stats/flowentry/delete_strict",
+                json=body,
+                timeout=2,
+            )
+            print(f"[🔓] Drop rule removed → dpid={dpid} mac={src_mac}, HTTP {r.status_code}")
+        except Exception as e:
+            print(f"[⚠️] delete_drop_rule: {e}")
 
     # ── GENERIC WRITE ACTIONS (MININET WRAPPER) ─────────────────────────────
 
