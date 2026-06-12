@@ -354,8 +354,8 @@ class Dashboard:
         fig.update_layout(
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(color="#6a8aac", title="Tempo (s)", gridcolor="#1a2744"),
-            yaxis=dict(color="#6a8aac", title="Pacchetti", gridcolor="#1a2744"),
+            xaxis=dict(color="#6a8aac", title="Time (s)", gridcolor="#1a2744"),
+            yaxis=dict(color="#6a8aac", title="Packets", gridcolor="#1a2744"),
             legend=dict(bgcolor="rgba(0,0,0,0)", font_color="white"),
             margin=dict(l=10, r=10, t=10, b=10),
             height=220,
@@ -383,7 +383,7 @@ class Dashboard:
         fig.update_layout(
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(color="#6a8aac", title="Tempo (s)", gridcolor="#1a2744"),
+            xaxis=dict(color="#6a8aac", title="Time (s)", gridcolor="#1a2744"),
             yaxis=dict(color="#6a8aac", title="ms", gridcolor="#1a2744"),
             showlegend=False,
             margin=dict(l=10, r=10, t=10, b=10),
