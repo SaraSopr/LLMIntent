@@ -108,7 +108,64 @@ class SidebarManager:
                     st.rerun()
 
         self.link_controls()
+        self.demo_controls()
         return None, None
+
+    def demo_controls(self):
+        st.sidebar.markdown("---")
+        st.sidebar.markdown("<div class='sec-header'>🎬 Demo Scenarios</div>", unsafe_allow_html=True)
+
+        hosts = sorted(self.topo_data.get("hosts", []))
+        if len(hosts) >= 2:
+            src = st.sidebar.selectbox("Storm source", hosts, key="demo_storm_src")
+            dst_choices = [h for h in hosts if h != src]
+            dst = st.sidebar.selectbox("Storm target", dst_choices, key="demo_storm_dst")
+            if st.sidebar.button("🌊 Traffic storm (45s)", width="stretch", key="demo_storm_btn"):
+                request_id = self.controller.enqueue_action(
+                    "traffic_storm",
+                    params={"src": src, "dst": dst, "duration": 45, "bw": "200M"},
+                    reason="demo_scenario",
+                )
+                st.session_state["demo_action_id"] = request_id
+                st.toast(f"🌊 UDP storm {src} → {dst} queued...")
+
+        ss_links = []
+        seen_pairs = set()
+        for link in self.topo_data.get("links", []):
+            n1, n2 = link.get("node1"), link.get("node2")
+            if not n1 or not n2:
+                continue
+            if not (str(n1).startswith("s") and str(n2).startswith("s")):
+                continue
+            pair = tuple(sorted((str(n1), str(n2))))
+            if pair not in seen_pairs:
+                seen_pairs.add(pair)
+                ss_links.append(pair)
+
+        if ss_links:
+            labels = [f"{a} ↔ {b}" for a, b in ss_links]
+            selected = st.sidebar.selectbox("Link to degrade", labels, key="demo_degrade_pair")
+            node1, node2 = ss_links[labels.index(selected)]
+            if st.sidebar.button("🐌 Degrade link", width="stretch", key="demo_degrade_btn"):
+                request_id = self.controller.enqueue_action(
+                    "set_link_tc",
+                    params={"node1": node1, "node2": node2, "bw": 1.0, "delay": "800ms"},
+                    reason="demo_scenario",
+                )
+                st.session_state["demo_action_id"] = request_id
+                st.toast(f"🐌 Degrading {node1} ↔ {node2} (1 Mbps, 800ms)...")
+
+        pending_id = st.session_state.get("demo_action_id")
+        if pending_id:
+            result = self.controller.get_action_result(pending_id)
+            if result is None:
+                st.sidebar.info("Demo action pending...")
+            elif result.get("success"):
+                st.sidebar.success(f"✅ {result.get('action')} started")
+                st.session_state.pop("demo_action_id", None)
+            else:
+                st.sidebar.error(f"❌ {result.get('action')} failed: {result.get('error', 'unknown error')}")
+                st.session_state.pop("demo_action_id", None)
 
     def link_controls(self):
         st.sidebar.markdown("---")

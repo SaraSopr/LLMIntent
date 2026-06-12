@@ -359,6 +359,36 @@ class NetworkMonitor:
                 print(f"[⚠️] UNBLOCK: host ref '{host_ref}' not found in topology.json")
                 return {"success": False, "error": f"host ref '{host_ref}' not found in topology.json"}
 
+        elif action == "traffic_storm":
+            net = getattr(self.ryu, "net", None)
+            if net is None:
+                print("[⚠️] DEMO traffic_storm: Mininet instance not attached")
+                return {"success": False, "error": "Mininet instance not attached"}
+
+            src = params.get("src")
+            dst = params.get("dst")
+            if not src or not dst or src == dst:
+                print("[⚠️] DEMO traffic_storm: invalid src/dst")
+                return {"success": False, "error": "invalid src/dst"}
+
+            duration = int(params.get("duration", 45) or 45)
+            bandwidth = str(params.get("bw", "200M"))
+            try:
+                h_src = net.get(src)
+                h_dst = net.get(dst)
+                dst_ip = h_dst.IP()
+            except Exception:
+                print(f"[⚠️] DEMO traffic_storm: hosts '{src}'/'{dst}' not found")
+                return {"success": False, "error": f"hosts '{src}'/'{dst}' not found"}
+
+            h_dst.cmd(f"timeout {duration + 5} iperf -s -u -p 5009 >/dev/null 2>&1 &")
+            h_src.cmd(
+                f"timeout {duration} iperf -u -c {dst_ip} -p 5009 "
+                f"-b {bandwidth} -t {duration} >/dev/null 2>&1 &"
+            )
+            print(f"[🌊 DEMO] Traffic storm {src}→{dst} ({bandwidth} for {duration}s) — {reason}")
+            return {"success": True}
+
         elif action == "none":
             print(f"[🔧 FIX] No action required — {reason}")
             return {"success": True}
