@@ -102,7 +102,7 @@ OVS switches + Mininet hosts
 | `network/templates/fix_intent.j2` | Remediation action prompt |
 | `network/templates/query_user.j2` | User-initiated query prompt |
 | `gui/Dashboard.py` | Streamlit dashboard entrypoint |
-| `gui/SidebarManager.py` | Host security controls (isolate/unblock) and link management |
+| `gui/SidebarManager.py` | Host security controls (isolate/unblock), link management, demo scenarios |
 | `gui/Visualizer.py` | Network topology graph rendering |
 | `gui/DataLoader.py` | Metrics and topology JSON loader |
 | `gui/SDNController.py` | GUI action queue client (enqueue/result polling) |
